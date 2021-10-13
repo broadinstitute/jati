@@ -1,4 +1,4 @@
 mod pos;
 mod error;
-mod state;
+mod byte_state;
 mod byte_set;

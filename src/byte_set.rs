@@ -1,12 +1,18 @@
 use std::fmt::{Display, Formatter};
 
-struct ByteSet {
+pub(crate) struct ByteSet {
     ranges: Vec<ByteRange>,
 }
 
 struct ByteRange {
     from: u8,
     to: u8,
+}
+
+impl ByteSet {
+    pub(crate) fn is_empty(&self) -> bool {
+        self.ranges.is_empty()
+    }
 }
 
 impl Display for ByteSet {
@@ -35,7 +41,7 @@ impl Display for ByteRange {
     }
 }
 
-fn byte_pretty_print(byte: u8) -> String {
+pub(crate) fn byte_pretty_print(byte: u8) -> String {
     match byte {
         0 => String::from("\\0"),
         7 => String::from("\\a"),
