@@ -1,14 +1,14 @@
 use crate::pos::Pos;
 use crate::byte_state::{ByteState, ByteStateSet};
 
-struct ParseError {
+pub struct Failure {
     pos: Pos,
     actual: ByteState,
     expected: ByteStateSet
 }
 
-impl ParseError {
+impl Failure {
     pub fn message(&self) -> String {
-        format!("Error at {}: found {}, expected {}", self.pos, self.actual, self.expected)
+        format!("Parse failure at {}: found {}, expected {}", self.pos, self.actual, self.expected)
     }
 }

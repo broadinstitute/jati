@@ -9,7 +9,7 @@ pub(crate) struct ByteStateSet {
     bytes_set: ByteSet,
 }
 
-pub(crate) enum ByteState {
+pub enum ByteState {
     Byte(u8),
     End,
 }
@@ -22,12 +22,10 @@ impl Display for ByteStateSet {
             } else {
                 write!(f, "{},{}", END_DISPLAY_STR, self.bytes_set)
             }
+        } else if self.bytes_set.is_empty() {
+            write!(f, "{}", NONE_DISPLAY_STR)
         } else {
-            if self.bytes_set.is_empty() {
-                write!(f, "{}", NONE_DISPLAY_STR)
-            } else {
-                write!(f, "{}", self.bytes_set)
-            }
+            write!(f, "{}", self.bytes_set)
         }
     }
 }
