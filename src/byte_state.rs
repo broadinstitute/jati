@@ -9,9 +9,18 @@ pub(crate) struct ByteStateSet {
     bytes_set: ByteSet,
 }
 
-pub enum ByteState {
-    Byte(u8),
-    End,
+pub struct ByteState(Option<u8>);
+
+impl ByteState {
+    pub(crate) fn to_byte_opt(&self) -> Option<u8> {
+        self.0
+    }
+}
+
+impl From<Option<u8>> for ByteState {
+    fn from(byte_opt: Option<u8>) -> Self {
+        ByteState(byte_opt)
+    }
 }
 
 impl Display for ByteStateSet {
@@ -32,9 +41,10 @@ impl Display for ByteStateSet {
 
 impl Display for ByteState {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        match self {
-            ByteState::Byte(byte) => { write!(f, "{}", byte_pretty_print(*byte)) }
-            ByteState::End => { write!(f, "{}", END_DISPLAY_STR) }
+        let ByteState(byte_opt) = self;
+        match byte_opt {
+            Some(byte) => { write!(f, "{}", byte_pretty_print(*byte)) }
+            None => { write!(f, "{}", END_DISPLAY_STR) }
         }
     }
 }
