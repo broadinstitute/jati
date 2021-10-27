@@ -3,9 +3,9 @@ use crate::parser::Parser;
 use crate::state::State;
 use crate::result::Valid::{Active, Complete};
 
-fn parse_bytes<A, C, S: State<A, C>>(mut byte_iter: Box<dyn Iterator<Item=u8>>,
-                        parser: Box<dyn Parser<A, C, S>>)
-                        -> Result<C, Failure> {
+pub(crate) fn parse_bytes<A, C, S: State<A, C>>(mut byte_iter: Box<dyn Iterator<Item=u8>>,
+                                                parser: &dyn Parser<A, C, S>)
+                                                -> Result<C, Failure> {
     let mut state = parser.new_state();
     loop {
         match byte_iter.next() {
