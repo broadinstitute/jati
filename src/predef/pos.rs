@@ -2,7 +2,6 @@ use crate::parser::Parser;
 use crate::state::State;
 use crate::pos::Pos;
 use crate::result::{ParseResultOngoing, ParseResultFinal};
-use crate::failure::Failure;
 use crate::result::Valid::Active;
 
 struct PosParser {}
@@ -75,7 +74,7 @@ impl State<Pos, Pos> for PosParserState {
         Ok(self.pos.clone())
     }
 
-    fn get_leftover_input_failure(&self, c: &Pos) -> Failure {
-        todo!()
+    fn pos(&self) -> Pos {
+        self.pos.clone()
     }
 }

@@ -10,6 +10,7 @@ struct ByteRange {
 }
 
 impl ByteSet {
+    pub(crate) fn new_empty() -> ByteSet { ByteSet { ranges: Vec::<ByteRange>::new() } }
     pub(crate) fn is_empty(&self) -> bool {
         self.ranges.is_empty()
     }

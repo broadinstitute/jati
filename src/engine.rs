@@ -9,12 +9,14 @@ pub(crate) fn parse_bytes<A, C, S: State<A, C>>(mut byte_iter: Box<dyn Iterator<
     let mut state = parser.new_state();
     loop {
         match byte_iter.next() {
-            None => { return state.push_end() }
+            None => { return state.push_end(); }
             Some(byte) => {
                 match state.push_byte(byte) {
                     Ok(Active(_)) => {}
-                    Ok(Complete(c)) => { return Err(state.get_leftover_input_failure(&c)) }
-                    Err(failure) => { return Err(failure) }
+                    Ok(Complete(_)) => {
+                        return Err(Failure::for_expected_end(byte, state.pos()));
+                    }
+                    Err(failure) => { return Err(failure); }
                 }
             }
         }

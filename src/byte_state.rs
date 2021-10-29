@@ -6,10 +6,18 @@ const END_DISPLAY_STR: &str = "[end]";
 
 pub(crate) struct ByteStateSet {
     includes_end: bool,
-    bytes_set: ByteSet,
+    byte_set: ByteSet,
 }
 
 pub struct ByteState(Option<u8>);
+
+impl ByteStateSet {
+    pub(crate) fn new_end() -> ByteStateSet {
+        let includes_end = true;
+        let byte_set = ByteSet::new_empty();
+        ByteStateSet { includes_end, byte_set }
+    }
+}
 
 impl ByteState {
     pub(crate) fn to_byte_opt(&self) -> Option<u8> {
@@ -26,15 +34,15 @@ impl From<Option<u8>> for ByteState {
 impl Display for ByteStateSet {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         if self.includes_end {
-            if self.bytes_set.is_empty() {
+            if self.byte_set.is_empty() {
                 write!(f, "{}", END_DISPLAY_STR)
             } else {
-                write!(f, "{},{}", END_DISPLAY_STR, self.bytes_set)
+                write!(f, "{},{}", END_DISPLAY_STR, self.byte_set)
             }
-        } else if self.bytes_set.is_empty() {
+        } else if self.byte_set.is_empty() {
             write!(f, "{}", NONE_DISPLAY_STR)
         } else {
-            write!(f, "{}", self.bytes_set)
+            write!(f, "{}", self.byte_set)
         }
     }
 }

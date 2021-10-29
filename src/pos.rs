@@ -1,7 +1,7 @@
 use std::fmt::{Display, Formatter};
 
 #[derive(Clone)]
-pub(crate) struct Pos {
+pub struct Pos {
     count: usize,
     line: usize,
     col: usize,
