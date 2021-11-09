@@ -22,3 +22,4 @@ pub(crate) fn parse_bytes<A, C, S: State<A, C>>(mut byte_iter: Box<dyn Iterator<
         }
     }
 }
+

@@ -1,14 +1,14 @@
-use crate::pos::Pos;
+use crate::pos_old::PosOld;
 use crate::byte_state::{ByteState, ByteStateSet};
 
 pub struct Failure {
-    pos: Pos,
+    pos: PosOld,
     actual: ByteState,
     expected: ByteStateSet,
 }
 
 impl Failure {
-    pub(crate) fn for_expected_end(actual: u8, pos: Pos) -> Failure {
+    pub(crate) fn for_expected_end(actual: u8, pos: PosOld) -> Failure {
         let actual = ByteState::from(Some(actual));
         let expected = ByteStateSet::new_end();
         Failure { pos, actual, expected }

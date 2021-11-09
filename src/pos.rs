@@ -1,26 +1,37 @@
 use std::fmt::{Display, Formatter};
 
-#[derive(Clone)]
 pub struct Pos {
-    count: usize,
-    line: usize,
-    col: usize,
+    byte_count: usize,
+    char_count: usize,
+    line_count: usize,
+    char_in_line_count: usize,
 }
 
 impl Pos {
-    pub(crate) fn new() -> Pos {
-        Pos { count: 0, line: 0, col: 0 }
+    fn new() -> Pos {
+        Pos { byte_count: 0, char_count: 0, line_count: 0, char_in_line_count: 0 }
     }
-    pub(crate) fn next_in_line(&self) -> Pos {
-        Pos { count: self.count + 1, line: self.line, col: self.col + 1 }
+    fn line(&self) -> usize { self.line_count + 1 }
+    fn col(&self) -> usize { self.char_in_line_count + 1 }
+    fn add_char(&self, n_bytes: usize) -> Pos {
+        let byte_count = self.byte_count + n_bytes;
+        let char_count = self.char_count + 1;
+        let line_count = self.line_count;
+        let char_in_line_count = self.char_in_line_count + 1;
+        Pos { byte_count, char_count, line_count, char_in_line_count }
     }
-    pub(crate) fn next_line(&self) -> Pos {
-        Pos { count: self.count + 1, line: self.line + 1, col: 0 }
+    fn break_line(&self) -> Pos {
+        let byte_count = self.byte_count;
+        let char_count = self.char_count;
+        let line_count = self.line_count + 1;
+        let char_in_line_count = 0;
+        Pos { byte_count, char_count, line_count, char_in_line_count }
     }
 }
 
 impl Display for Pos {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}:{} ({})", self.line, self.col, self.count)
+        write!(f, "{}:{} (after {} chars, {} bytes)", self.line(), self.col(), self.char_count,
+               self.byte_count)
     }
 }

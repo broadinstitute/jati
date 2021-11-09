@@ -1,4 +1,4 @@
-mod pos;
+mod pos_old;
 pub mod failure;
 mod byte_state;
 mod byte_set;
@@ -7,3 +7,5 @@ pub mod parser;
 mod state;
 mod engine;
 mod predef;
+mod token;
+mod pos;

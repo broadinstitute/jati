@@ -1,6 +1,6 @@
 use crate::parser::Parser;
 use crate::state::State;
-use crate::pos::Pos;
+use crate::pos_old::PosOld;
 use crate::result::{ParseResultOngoing, ParseResultFinal};
 use crate::result::Valid::Active;
 
@@ -14,7 +14,7 @@ struct LineEndState {
 
 struct PosParserState {
     line_end_state: LineEndState,
-    pos: Pos
+    pos: PosOld
 }
 
 impl LineEndState {
@@ -49,14 +49,14 @@ impl LineEndState {
     }
 }
 
-impl Parser<Pos, Pos, PosParserState> for PosParser {
+impl Parser<PosOld, PosOld, PosParserState> for PosParser {
     fn new_state(&self) -> PosParserState {
-        PosParserState { line_end_state: LineEndState::new(), pos: Pos::new() }
+        PosParserState { line_end_state: LineEndState::new(), pos: PosOld::new() }
     }
 }
 
-impl State<Pos, Pos> for PosParserState {
-    fn push_byte(&mut self, byte: u8) -> ParseResultOngoing<Pos, Pos> {
+impl State<PosOld, PosOld> for PosParserState {
+    fn push_byte(&mut self, byte: u8) -> ParseResultOngoing<PosOld, PosOld> {
         match byte {
             b'\n' => { self.line_end_state = self.line_end_state.push_lf(); }
             b'\r' => { self.line_end_state = self.line_end_state.push_cr(); }
@@ -70,11 +70,11 @@ impl State<Pos, Pos> for PosParserState {
         Ok(Active(self.pos.clone()))
     }
 
-    fn push_end(&mut self) -> ParseResultFinal<Pos> {
+    fn push_end(&mut self) -> ParseResultFinal<PosOld> {
         Ok(self.pos.clone())
     }
 
-    fn pos(&self) -> Pos {
+    fn pos(&self) -> PosOld {
         self.pos.clone()
     }
 }
