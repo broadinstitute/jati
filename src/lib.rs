@@ -1,5 +1,5 @@
 mod pos_old;
-pub mod failure;
+pub mod failure_old;
 mod byte_state;
 mod byte_set;
 mod result;
@@ -9,3 +9,6 @@ mod engine;
 mod predef;
 mod token;
 mod pos;
+mod code_point;
+mod util;
+mod error;

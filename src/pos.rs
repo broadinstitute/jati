@@ -1,5 +1,6 @@
 use std::fmt::{Display, Formatter};
 
+#[derive(Clone)]
 pub struct Pos {
     byte_count: usize,
     char_count: usize,
@@ -8,7 +9,7 @@ pub struct Pos {
 }
 
 impl Pos {
-    fn new() -> Pos {
+    pub(crate) fn new() -> Pos {
         Pos { byte_count: 0, char_count: 0, line_count: 0, char_in_line_count: 0 }
     }
     fn line(&self) -> usize { self.line_count + 1 }

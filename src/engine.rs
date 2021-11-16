@@ -1,11 +1,11 @@
-use crate::failure::Failure;
+use crate::failure_old::FailureOld;
 use crate::parser::Parser;
 use crate::state::State;
 use crate::result::Valid::{Active, Complete};
 
 pub(crate) fn parse_bytes<A, C, S: State<A, C>>(mut byte_iter: Box<dyn Iterator<Item=u8>>,
                                                 parser: &dyn Parser<A, C, S>)
-                                                -> Result<C, Failure> {
+                                                -> Result<C, FailureOld> {
     let mut state = parser.new_state();
     loop {
         match byte_iter.next() {
@@ -14,7 +14,7 @@ pub(crate) fn parse_bytes<A, C, S: State<A, C>>(mut byte_iter: Box<dyn Iterator<
                 match state.push_byte(byte) {
                     Ok(Active(_)) => {}
                     Ok(Complete(_)) => {
-                        return Err(Failure::for_expected_end(byte, state.pos()));
+                        return Err(FailureOld::for_expected_end(byte, state.pos()));
                     }
                     Err(failure) => { return Err(failure); }
                 }
