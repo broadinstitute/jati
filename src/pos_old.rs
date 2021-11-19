@@ -8,9 +8,6 @@ pub struct PosOld {
 }
 
 impl PosOld {
-    pub(crate) fn new() -> PosOld {
-        PosOld { count: 0, line: 0, col: 0 }
-    }
     pub(crate) fn next_in_line(&self) -> PosOld {
         PosOld { count: self.count + 1, line: self.line, col: self.col + 1 }
     }

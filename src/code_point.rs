@@ -1,8 +1,11 @@
+use crate::util::byte_util;
+
+#[derive(PartialEq)]
 pub(crate) struct CodePoint {
-    char: u32,
+    pub(crate) char: u32,
 }
 
-struct Utf8Error {
+pub(crate) struct Utf8Error {
     message: String,
 }
 
@@ -30,7 +33,7 @@ impl CodePoint {
             Err(Utf8Error::from(format!(
                 "Following byte of a code point needs to be between {} and {}, but is {}.",
                 format!("{:02X}", 0b10000000), format!("{:02X}", 0b10111111),
-                format!("{:02X}", byte)
+                format!("{}", byte_util::byte_pretty_print(byte))
             )))
         }
     }
@@ -72,10 +75,21 @@ impl CodePoint {
             };
         Ok(CodePoint::from(char))
     }
-    fn read(bytes_iter: &mut Box<dyn Iterator<Item=u8>>) -> Option<Result<CodePoint, Utf8Error>> {
+    pub(crate) fn read(bytes_iter: &mut Box<dyn Iterator<Item=u8>>) -> Option<Result<CodePoint, Utf8Error>> {
         match bytes_iter.next() {
             None => { None }
             Some(byte0) => { Some(CodePoint::read_more(bytes_iter, byte0)) }
+        }
+    }
+    pub(crate) fn n_utf8_bytes(&self) -> u8 {
+        if self.char <= 127 {
+            1
+        } else if self.char <= 2047 {
+            2
+        } else if self.char <= 65535 {
+            3
+        } else {
+            4
         }
     }
 }

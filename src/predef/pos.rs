@@ -1,4 +1,3 @@
-use crate::parser::Parser;
 use crate::state::State;
 use crate::pos_old::PosOld;
 use crate::result::{ParseResultOngoing, ParseResultFinal};
@@ -46,12 +45,6 @@ impl LineEndState {
                 (self.at_end_with_lf, false)
             };
         LineEndState { at_end_with_lf, at_end_with_cr, at_first_of_line }
-    }
-}
-
-impl Parser<PosOld, PosOld, PosParserState> for PosParser {
-    fn new_state(&self) -> PosParserState {
-        PosParserState { line_end_state: LineEndState::new(), pos: PosOld::new() }
     }
 }
 
