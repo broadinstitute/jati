@@ -5,7 +5,6 @@ mod byte_set;
 mod result;
 pub mod parser;
 mod state;
-mod predef;
 mod token;
 mod pos;
 mod code_point;

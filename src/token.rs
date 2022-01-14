@@ -4,6 +4,12 @@ mod code_point;
 pub(crate) mod token_iter;
 
 pub(crate) struct Token<T> {
+    item: T,
     pos: Pos,
-    item: T
+}
+
+impl<T> Token<T> {
+    pub(crate) fn new(item: T, pos: Pos) -> Token<T> {
+        Token { item, pos }
+    }
 }

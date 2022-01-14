@@ -14,7 +14,7 @@ impl Pos {
     }
     fn line(&self) -> usize { self.line_count + 1 }
     fn col(&self) -> usize { self.char_in_line_count + 1 }
-    fn add_char(&self, n_bytes: usize) -> Pos {
+    pub(crate) fn add_char(&self, n_bytes: usize) -> Pos {
         let byte_count = self.byte_count + n_bytes;
         let char_count = self.char_count + 1;
         let line_count = self.line_count;
