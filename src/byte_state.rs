@@ -11,20 +11,6 @@ pub(crate) struct ByteStateSet {
 
 pub struct ByteState(Option<u8>);
 
-impl ByteStateSet {
-    pub(crate) fn new_end() -> ByteStateSet {
-        let includes_end = true;
-        let byte_set = ByteSet::new_empty();
-        ByteStateSet { includes_end, byte_set }
-    }
-}
-
-impl ByteState {
-    pub(crate) fn to_byte_opt(&self) -> Option<u8> {
-        self.0
-    }
-}
-
 impl From<Option<u8>> for ByteState {
     fn from(byte_opt: Option<u8>) -> Self {
         ByteState(byte_opt)

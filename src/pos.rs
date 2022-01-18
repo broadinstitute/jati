@@ -21,7 +21,7 @@ impl Pos {
         let char_in_line_count = self.char_in_line_count + 1;
         Pos { byte_count, char_count, line_count, char_in_line_count }
     }
-    fn break_line(&self) -> Pos {
+    pub(crate) fn break_line(&self) -> Pos {
         let byte_count = self.byte_count;
         let char_count = self.char_count;
         let line_count = self.line_count + 1;

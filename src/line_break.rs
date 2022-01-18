@@ -1,7 +1,7 @@
 use crate::code_point::CodePoint;
 
 pub(crate) trait LineBreaker {
-    fn check_if_new_line(&mut self, code_point: CodePoint) -> bool;
+    fn check_if_new_line(&mut self, code_point: &CodePoint) -> bool;
 }
 
 enum History {
@@ -29,16 +29,16 @@ mod code_points {
 }
 
 impl LineBreaker for LinuxOrWindowsLineBreaker {
-    fn check_if_new_line(&mut self, code_point: CodePoint) -> bool {
+    fn check_if_new_line(&mut self, code_point: &CodePoint) -> bool {
         let (history_new, starts_new_line) =
-            if code_point == code_points::LF {
+            if *code_point == code_points::LF {
                 match self.history {
                     History::Lf => { (History::Lf, true) }
                     History::Cr => { (History::NewLine, false) }
                     History::NewLine => { (History::Lf, true) }
                     History::Other => { (History::Lf, false) }
                 }
-            } else if code_point == code_points::CR {
+            } else if *code_point == code_points::CR {
                 match self.history {
                     History::Lf => { (History::NewLine, false) }
                     History::Cr => { (History::Cr, true) }
