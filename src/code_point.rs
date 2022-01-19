@@ -6,6 +6,7 @@ pub(crate) struct CodePoint {
     pub(crate) char: u32,
 }
 
+#[derive(Clone)]
 pub(crate) struct Utf8Error {
     message: String,
     pub(crate) i_byte: u8
@@ -16,6 +17,7 @@ impl Utf8Error {
         Utf8Error { message, i_byte }
     }
 }
+
 // impl From<String> for Utf8Error {
 //     fn from(message: String) -> Self { Utf8Error { message } }
 // }

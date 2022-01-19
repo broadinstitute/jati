@@ -25,21 +25,27 @@ impl Iterator for CodePointIter {
     type Item = TokenResult<CodePoint>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        match CodePoint::read(&mut self.bytes_iter) {
-            None => { None }
-            Some(Ok(code_point)) => {
-                let pos_raw = self.pos.add_char(code_point.n_utf8_bytes() as usize);
-                let pos =
-                    if self.line_breaker.check_if_new_line(&code_point) {
-                        pos_raw.break_line()
-                    } else {
-                        pos_raw
-                    };
-                Some(Ok(Token::new(code_point, pos)))
-            }
-            Some(Err(utf8_error)) => {
-                let pos = self.pos.add_char(utf8_error.i_byte as usize);
-                Some(Err(Error::Utf8(utf8_error, pos)))
+        if let Some(error) = &self.failure_opt {
+            Some(Err(error.clone()))
+        } else {
+            match CodePoint::read(&mut self.bytes_iter) {
+                None => { None }
+                Some(Ok(code_point)) => {
+                    let pos_raw = self.pos.add_char(code_point.n_utf8_bytes() as usize);
+                    let pos =
+                        if self.line_breaker.check_if_new_line(&code_point) {
+                            pos_raw.break_line()
+                        } else {
+                            pos_raw
+                        };
+                    Some(Ok(Token::new(code_point, pos)))
+                }
+                Some(Err(utf8_error)) => {
+                    let pos = self.pos.add_char(utf8_error.i_byte as usize);
+                    let error = Error::Utf8(utf8_error, pos);
+                    self.failure_opt = Some(error.clone());
+                    Some(Err(error))
+                }
             }
         }
     }

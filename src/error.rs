@@ -12,6 +12,17 @@ pub(crate) struct ParseError {
     message: String
 }
 
+impl Clone for Error {
+    fn clone(&self) -> Self {
+        match self {
+            Error::Parse(parse_error) => { Error::Parse(parse_error.clone())}
+            Error::Utf8(utf8_error, pos) => {
+                Error::Utf8(utf8_error.clone(), pos.clone())
+            }
+        }
+    }
+}
+
 impl Display for Error {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
