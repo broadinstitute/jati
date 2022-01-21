@@ -1,4 +1,3 @@
-mod pos_old;
 pub mod failure_old;
 mod byte_state;
 mod byte_set;
