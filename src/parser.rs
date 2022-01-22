@@ -1,4 +1,4 @@
 use crate::state::State;
 
-pub trait Parser<A, C, S: State<A, C>> {
+pub(crate) trait Parser<A, C, S: State<A, C>> {
 }

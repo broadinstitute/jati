@@ -1,7 +1,7 @@
 use crate::result::{ParseResultOngoing, ParseResultFinal};
 use crate::pos::Pos;
 
-pub trait State<A, C> {
+pub(crate) trait State<A, C> {
     fn push_byte(&mut self, byte: u8) -> ParseResultOngoing<A, C>;
     fn push_end(&mut self) -> ParseResultFinal<C>;
     fn pos(&self) -> Pos;

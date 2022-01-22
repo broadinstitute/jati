@@ -1,7 +1,7 @@
 use crate::pos::Pos;
 use crate::code_point::CodePoint;
 use crate::token::token_iter::{TokenResult, TokenIter};
-use crate::error::Error;
+use crate::error::{Error, ParseError};
 use crate::line_break::LineBreaker;
 use crate::token::Token;
 
@@ -42,7 +42,7 @@ impl Iterator for CodePointIter {
                 }
                 Some(Err(utf8_error)) => {
                     let pos = self.pos.add_char(utf8_error.i_byte as usize);
-                    let error = Error::Utf8(utf8_error, pos);
+                    let error = Error::Parse(ParseError::Utf8(utf8_error, pos));
                     self.failure_opt = Some(error.clone());
                     Some(Err(error))
                 }

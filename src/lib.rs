@@ -1,4 +1,3 @@
-pub mod failure_old;
 mod byte_state;
 mod byte_set;
 mod result;
