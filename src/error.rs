@@ -2,11 +2,11 @@ use crate::pos::Pos;
 use std::fmt::{Formatter, Display};
 use crate::code_point::Utf8Error;
 
-pub(crate) enum Error {
+pub enum Error {
     Parse(ParseError)
 }
 
-pub(crate) enum ParseError {
+pub enum ParseError {
     Utf8(Utf8Error, Pos)
 }
 

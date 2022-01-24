@@ -7,7 +7,7 @@ pub(crate) struct CodePoint {
 }
 
 #[derive(Clone)]
-pub(crate) struct Utf8Error {
+pub struct Utf8Error {
     pub(crate) message: String,
     pub(crate) i_byte: u8
 }
