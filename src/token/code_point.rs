@@ -1,7 +1,7 @@
 use crate::pos::Pos;
 use crate::code_point::CodePoint;
 use crate::token::token_iter::{TokenResult, TokenIter};
-use crate::error::{Error, ParseError};
+use crate::error::ParseError;
 use crate::line_break::LineBreaker;
 use crate::token::Token;
 
@@ -9,12 +9,12 @@ pub(crate) struct CodePointIter {
     bytes_iter: Box<dyn Iterator<Item=u8>>,
     line_breaker: Box<dyn LineBreaker>,
     pos: Pos,
-    failure_opt: Option<Error>,
+    failure_opt: Option<ParseError>,
 }
 
 impl CodePointIter {
-    fn new(bytes_iter: Box<dyn Iterator<Item=u8>>, line_breaker: Box<dyn LineBreaker>)
-           -> CodePointIter {
+    pub(crate) fn new(bytes_iter: Box<dyn Iterator<Item=u8>>, line_breaker: Box<dyn LineBreaker>)
+                      -> CodePointIter {
         let pos = Pos::new();
         let failure_opt = None;
         CodePointIter { bytes_iter, line_breaker, pos, failure_opt }
@@ -42,7 +42,7 @@ impl Iterator for CodePointIter {
                 }
                 Some(Err(utf8_error)) => {
                     let pos = self.pos.add_char(utf8_error.i_byte as usize);
-                    let error = Error::Parse(ParseError::Utf8(utf8_error, pos));
+                    let error = ParseError::Utf8(utf8_error, pos);
                     self.failure_opt = Some(error.clone());
                     Some(Err(error))
                 }

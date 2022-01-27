@@ -11,12 +11,12 @@ enum History {
     Other,
 }
 
-struct LinuxOrWindowsLineBreaker {
+pub(crate) struct LinuxOrWindowsLineBreaker {
     history: History,
 }
 
 impl LinuxOrWindowsLineBreaker {
-    fn new() -> LinuxOrWindowsLineBreaker {
+    pub(crate) fn new() -> LinuxOrWindowsLineBreaker {
         LinuxOrWindowsLineBreaker { history: History::NewLine }
     }
 }

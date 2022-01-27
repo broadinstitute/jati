@@ -2,7 +2,7 @@ use crate::util::byte_util;
 use std::fmt::{Display, Formatter};
 
 #[derive(PartialEq)]
-pub(crate) struct CodePoint {
+pub struct CodePoint {
     pub(crate) char: u32,
 }
 

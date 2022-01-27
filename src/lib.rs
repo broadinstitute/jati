@@ -5,3 +5,4 @@ mod code_point;
 mod util;
 mod error;
 mod line_break;
+pub mod parse;

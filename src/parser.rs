@@ -1,6 +1,6 @@
 use crate::error::ParseError;
-use crate::token::Token;
+use crate::token::token_iter::TokenIter;
 
-pub trait Parser<A, B> {
-    fn parse(token_iter: Box<dyn Iterator<Item=Token<B>>>) -> Result<A, ParseError>;
+pub trait Parser<A, B: 'static> {
+    fn parse(&self, token_iter: Box<dyn TokenIter<B>>) -> Result<A, ParseError>;
 }
