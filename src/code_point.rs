@@ -40,9 +40,8 @@ impl CodePoint {
             Ok(())
         } else {
             Err(Utf8Error::new(format!(
-                "Following byte of a code point needs to be between {} and {}, but is {}.",
-                format!("{:02X}", 0b10000000), format!("{:02X}", 0b10111111),
-                byte_util::byte_pretty_print(byte)
+                "Following byte of a code point needs to be between {:02X} and {:02X}, but is {}.",
+                0b10000000, 0b10111111, byte_util::byte_pretty_print(byte)
             ), i_byte))
         }
     }
