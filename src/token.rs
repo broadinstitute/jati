@@ -1,10 +1,9 @@
 use crate::pos::Pos;
-use std::any::Any;
 
 pub(crate) mod code_point;
 pub(crate) mod token_iter;
 
-pub struct Token<T: Any> {
+pub struct Token<T> {
     item: Box<T>,
     pos: Pos,
 }

@@ -3,7 +3,5 @@ use crate::token::Token;
 
 pub(crate) type TokenResult<T> = Result<Token<T>, ParseError>;
 
-pub trait TokenIter<T: 'static> : Iterator<Item=TokenResult<T>> {
-
-}
+pub(crate) type TokenIterBox<T> = Box<dyn Iterator<Item=TokenResult<T>>>;
 

@@ -1,6 +1,6 @@
 use crate::pos::Pos;
 use crate::code_point::CodePoint;
-use crate::token::token_iter::{TokenResult, TokenIter};
+use crate::token::token_iter::TokenResult;
 use crate::error::ParseError;
 use crate::line_break::LineBreaker;
 use crate::token::Token;
@@ -50,5 +50,3 @@ impl Iterator for CodePointIter {
         }
     }
 }
-
-impl TokenIter<CodePoint> for CodePointIter {}
