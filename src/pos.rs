@@ -8,10 +8,10 @@ pub struct Pos {
     char_in_line_count: usize,
 }
 
+pub(crate) const POS_ZERO: Pos = Pos { byte_count: 0, char_count: 0, line_count: 0, char_in_line_count: 0 };
+
 impl Pos {
-    pub(crate) fn new() -> Pos {
-        Pos { byte_count: 0, char_count: 0, line_count: 0, char_in_line_count: 0 }
-    }
+    pub(crate) fn new() -> Pos { POS_ZERO }
     fn line(&self) -> usize { self.line_count + 1 }
     fn col(&self) -> usize { self.char_in_line_count + 1 }
     pub(crate) fn add_char(&self, n_bytes: usize) -> Pos {

@@ -4,7 +4,7 @@ pub(crate) mod code_point;
 pub(crate) mod token_iter;
 
 pub struct Token<T> {
-    item: Box<T>,
+    pub(crate) item: Box<T>,
     pos_begin: Pos,
     pos_end: Pos
 }
