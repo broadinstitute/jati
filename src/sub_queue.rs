@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::ops::Range;
 
 type K = u64;
 
@@ -12,6 +13,7 @@ struct SubQueue<V> {
 enum SubQueueError {
     KeyListEmpty,
     NoSuchKey(K),
+    WrongKeyAt(usize, K, K)
 }
 
 impl<V> SubQueue<V> {
@@ -56,11 +58,26 @@ impl<V> SubQueue<V> {
         self.find_key_index(key).map(|i_key| { self.keys.remove(i_key) });
         self.items.remove(key)
     }
-    fn replace(&mut self, keys_to_remove: &[K], items_to_add: Vec<V>)
-               -> Result<(Vec<V>, Vec<K>), SubQueueError> {
-        if keys_to_remove.is_empty() {
+    fn find_keys(&self, keys: &[K]) -> Result<Range<usize>, SubQueueError> {
+        if keys.is_empty() {
             return Err(SubQueueError::KeyListEmpty);
         }
+        let key0 = &keys[0];
+        let i_begin =
+            self.find_key_index(&keys[0]).ok_or(SubQueueError::NoSuchKey(*key0))?;
+        let range = i_begin .. (i_begin + keys.len());
+        for i in range.clone() {
+            let key_expected = &keys[i - i_begin];
+            let key_actual = &self.keys[i];
+            if key_expected != key_actual {
+                return Err(SubQueueError::WrongKeyAt(i, *key_expected, *key_actual))
+            }
+        }
+        Ok(range)
+    }
+    fn replace(&mut self, keys_to_remove: &[K], items_to_add: Vec<V>)
+               -> Result<(Vec<V>, Vec<K>), SubQueueError> {
+        let range_to_remove = self.find_keys(keys_to_remove)?;
         let mut items_removed = Vec::<V>::new();
         let mut error: Option<SubQueueError> = None;
         for key_to_remove in keys_to_remove {
@@ -75,7 +92,12 @@ impl<V> SubQueue<V> {
             }
         }
         let mut keys_added = Vec::<K>::new();
-        todo!();
+        for item_to_add in items_to_add {
+            let key_new = self.new_key();
+            keys_added.push(key_new);
+            self.items.insert(key_new, item_to_add);
+        }
+        self.keys.splice(range_to_remove, keys_added.clone());
         match error {
             None => { Ok((items_removed, keys_added)) }
             Some(error) => { Err(error) }
