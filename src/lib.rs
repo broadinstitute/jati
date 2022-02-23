@@ -18,8 +18,4 @@ mod sub_queue;
 pub struct Jati {}
 
 impl Jati {
-    pub fn transform<A>(&self, grammar: &dyn Grammar, token_iter: TokenIterBox<A>)
-                        -> TokenIterBox<A> {
-        engine::transform::<A>(grammar, token_iter)
-    }
 }

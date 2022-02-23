@@ -3,7 +3,7 @@ use std::ops::Range;
 
 type K = u64;
 
-struct SubQueue<V> {
+pub(crate) struct SubQueue<V> {
     items: HashMap<K, V>,
     keys: Vec<K>,
     index: HashMap<K, usize>,
@@ -17,14 +17,14 @@ enum SubQueueError {
 }
 
 impl<V> SubQueue<V> {
-    fn new() -> SubQueue<V> {
+    pub(crate) fn new() -> SubQueue<V> {
         let items = HashMap::<K, V>::new();
         let keys = Vec::<K>::new();
         let index = HashMap::<K, usize>::new();
         let key_counter = 0_u64;
         SubQueue { items, keys, index, key_counter }
     }
-    fn is_empty(&self) -> bool { self.keys.is_empty() }
+    pub(crate) fn is_empty(&self) -> bool { self.keys.is_empty() }
     fn len(&self) -> usize { self.keys.len() }
     fn new_key(&mut self) -> K {
         self.key_counter += 1;
