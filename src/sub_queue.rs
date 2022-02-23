@@ -30,7 +30,7 @@ impl<V> SubQueue<V> {
         self.key_counter += 1;
         self.key_counter
     }
-    fn push(&mut self, item: V) -> K {
+    pub(crate) fn push(&mut self, item: V) -> K {
         let key = self.new_key();
         self.items.insert(key, item);
         self.keys.push(key);
