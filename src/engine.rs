@@ -19,12 +19,18 @@ impl<A> Engine<A> {
         let error = None;
         Engine { token_iter, grammar, queue, got_none_from_iter, error }
     }
-    fn load_token(&mut self) {
+    fn add_token_to_queue(&mut self, token: Token<A>) {
+        self.queue.push(token);
+        todo!()
+    }
+    fn pull_next_token(&mut self) {
         match self.token_iter.next() {
             None => { self.got_none_from_iter = true; }
-            Some(Ok(token)) => { self.queue.push(token); }
             Some(Err(error)) => { self.error = Some(error); }
+            Some(Ok(token)) => { self.add_token_to_queue(token); }
         }
+    }
+    fn iterate(&mut self) {
         todo!()
     }
     pub(crate) fn next(&mut self) -> Option<Result<Token<A>, ParseError>> {
