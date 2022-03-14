@@ -26,8 +26,10 @@ impl CodePointIter {
     }
 }
 
+const TAG: &str = "code_point";
+
 impl Iterator for CodePointIter {
-    type Item = TokenResult<CodePoint>;
+    type Item = TokenResult<&'static str, CodePoint>;
 
     fn next(&mut self) -> Option<Self::Item> {
         if let Some(error) = &self.failure_opt {
@@ -44,7 +46,7 @@ impl Iterator for CodePointIter {
                             pos_unbroken
                         };
                     self.pos_begin = mem::replace(&mut self.pos_end, pos_end_new);
-                    Some(Ok(Token::new(code_point, self.pos_begin.clone(),
+                    Some(Ok(Token::new(TAG,code_point, self.pos_begin.clone(),
                                        self.pos_end.clone())))
                 }
                 Some(Err(utf8_error)) => {
