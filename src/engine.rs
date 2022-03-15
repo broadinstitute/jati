@@ -4,22 +4,22 @@ use crate::sub_queue::SubQueue;
 use crate::token::Token;
 use crate::error::ParseError;
 
-struct Engine<T, I> {
-    token_iter: TokenIterBox<T, I>,
+struct Engine<I> {
+    token_iter: TokenIterBox<I>,
     grammar: Box<dyn Grammar>,
-    queue: SubQueue<Token<T, I>>,
+    queue: SubQueue<Token<I>>,
     got_none_from_iter: bool,
     error: Option<ParseError>,
 }
 
-impl<T, I> Engine<T, I> {
-    pub(crate) fn new(token_iter: TokenIterBox<T, I>, grammar: Box<dyn Grammar>) -> Engine<T, I> {
-        let queue = SubQueue::<Token<T, I>>::new();
+impl<I> Engine<I> {
+    pub(crate) fn new(token_iter: TokenIterBox<I>, grammar: Box<dyn Grammar>) -> Engine<I> {
+        let queue = SubQueue::<Token<I>>::new();
         let got_none_from_iter = false;
         let error = None;
         Engine { token_iter, grammar, queue, got_none_from_iter, error }
     }
-    fn add_token_to_queue(&mut self, token: Token<T, I>) {
+    fn add_token_to_queue(&mut self, token: Token<I>) {
         self.queue.push(token);
         todo!()
     }
@@ -33,7 +33,7 @@ impl<T, I> Engine<T, I> {
     fn iterate(&mut self) {
         todo!()
     }
-    pub(crate) fn next(&mut self) -> Option<Result<Token<T, I>, ParseError>> {
+    pub(crate) fn next(&mut self) -> Option<Result<Token<I>, ParseError>> {
         todo!()
     }
     pub(crate) fn item(&mut self) -> Result<I, ParseError> {
