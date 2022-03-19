@@ -6,14 +6,14 @@ use crate::error::ParseError;
 
 struct Engine<I> {
     token_iter: TokenIterBox<I>,
-    grammar: Box<dyn Grammar>,
+    grammar: Box<dyn Grammar<I>>,
     queue: SubQueue<Token<I>>,
     got_none_from_iter: bool,
     error: Option<ParseError>,
 }
 
 impl<I> Engine<I> {
-    pub(crate) fn new(token_iter: TokenIterBox<I>, grammar: Box<dyn Grammar>) -> Engine<I> {
+    pub(crate) fn new(token_iter: TokenIterBox<I>, grammar: Box<dyn Grammar<I>>) -> Engine<I> {
         let queue = SubQueue::<Token<I>>::new();
         let got_none_from_iter = false;
         let error = None;
