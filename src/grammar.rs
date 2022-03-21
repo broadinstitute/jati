@@ -1,8 +1,8 @@
 use crate::todet::ToDet;
-use crate::parse_run::ParseRun;
+use crate::token_result::TokenResult;
 
-pub trait Grammar<I> {
-    fn first_item(&self, item: &I) -> Option<Box<dyn ParseRun<I>>>;
+pub(crate) trait Grammar<I> {
+    fn first_item(&self, item: &I) -> TokenResult<I>;
 }
 
 pub struct Map<I, A, R, F: Fn(A) -> R> {

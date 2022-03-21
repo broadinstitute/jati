@@ -4,7 +4,7 @@ use crate::sub_queue::SubQueue;
 use crate::token::Token;
 use crate::error::ParseError;
 
-struct Engine<I> {
+pub(crate) struct Engine<I> {
     token_iter: TokenIterBox<I>,
     grammar: Box<dyn Grammar<I>>,
     queue: SubQueue<Token<I>>,
