@@ -1,11 +1,11 @@
 use crate::grammar::Grammar;
-use crate::token::token_iter::TokenIterBox;
+use crate::token::token_iter::TokenIter;
 use crate::sub_queue::SubQueue;
 use crate::token::Token;
 use crate::error::ParseError;
 
 pub(crate) struct Engine<I> {
-    token_iter: TokenIterBox<I>,
+    token_iter: Box<dyn TokenIter<I>>,
     grammar: Box<dyn Grammar<I>>,
     queue: SubQueue<Token<I>>,
     got_none_from_iter: bool,
@@ -13,7 +13,8 @@ pub(crate) struct Engine<I> {
 }
 
 impl<I> Engine<I> {
-    pub(crate) fn new(token_iter: TokenIterBox<I>, grammar: Box<dyn Grammar<I>>) -> Engine<I> {
+    pub(crate) fn new(token_iter: Box<dyn TokenIter<I>>, grammar: Box<dyn Grammar<I>>)
+        -> Engine<I> {
         let queue = SubQueue::<Token<I>>::new();
         let got_none_from_iter = false;
         let error = None;
