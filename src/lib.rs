@@ -22,7 +22,7 @@ mod token_result;
 pub struct Jati {}
 
 impl Jati {
-    fn scan_string(string: String) -> Box<dyn TokenIter<CodePoint>> {
+    fn scan_string(string: String) -> impl TokenIter<Item=CodePoint> {
         let bytes_iter = string.into_bytes().into_iter();
         let line_breaker = LinuxOrWindowsLineBreaker::new();
         let code_point_iter =

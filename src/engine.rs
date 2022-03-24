@@ -4,17 +4,17 @@ use crate::sub_queue::SubQueue;
 use crate::token::Token;
 use crate::error::ParseError;
 
-pub(crate) struct Engine<I> {
-    token_iter: Box<dyn TokenIter<I>>,
+pub(crate) struct Engine<I, T: TokenIter<Item=I>> {
+    token_iter: T,
     grammar: Box<dyn Grammar<I>>,
     queue: SubQueue<Token<I>>,
     got_none_from_iter: bool,
     error: Option<ParseError>,
 }
 
-impl<I> Engine<I> {
-    pub(crate) fn new(token_iter: Box<dyn TokenIter<I>>, grammar: Box<dyn Grammar<I>>)
-        -> Engine<I> {
+impl<I, T: TokenIter<Item=I>> Engine<I, T> {
+    pub(crate) fn new(token_iter: T, grammar: Box<dyn Grammar<I>>)
+        -> Engine<I, T> {
         let queue = SubQueue::<Token<I>>::new();
         let got_none_from_iter = false;
         let error = None;
