@@ -1,6 +1,6 @@
 use crate::pos::Pos;
 use crate::code_point::CodePoint;
-use crate::token::token_iter::TokenResult;
+use crate::token::token_iter::{TokenResult, TokenIter, TokenIterCore};
 use crate::error::ParseError;
 use crate::line_break::LineBreaker;
 use crate::token::Token;
@@ -26,10 +26,9 @@ impl CodePointIter {
     }
 }
 
-impl Iterator for CodePointIter {
-    type Item = TokenResult<CodePoint>;
-
-    fn next(&mut self) -> Option<Self::Item> {
+impl TokenIterCore for CodePointIter {
+    type Item = CodePoint;
+    fn next(&mut self) -> Option<TokenResult<Self::Item>> {
         if let Some(error) = &self.failure_opt {
             Some(Err(error.clone()))
         } else {
@@ -56,4 +55,7 @@ impl Iterator for CodePointIter {
             }
         }
     }
+}
+
+impl TokenIter for CodePointIter {
 }
