@@ -13,9 +13,9 @@ pub trait TokenIterCore {
 }
 
 pub trait TokenIter: TokenIterCore {
-    fn map<J, F: FnMut(Self::Item) -> J>(self, f: F) -> Map<Self::Item, Self, J, F>
+    fn map<J, F: 'static + FnMut(Self::Item) -> J>(self, f: F) -> Map<Self::Item, Self, J>
         where Self: Sized {
-        Map::new(self, f)
+        Map::new(self, Box::new(f))
     }
 }
 
