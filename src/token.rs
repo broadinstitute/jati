@@ -1,7 +1,7 @@
 use crate::pos::Pos;
 
-pub(crate) mod code_point;
-pub(crate) mod token_iter;
+pub mod code_point;
+pub mod token_iter;
 
 pub struct Token<I> {
     pub(crate) item: I,
