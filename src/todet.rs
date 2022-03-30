@@ -1,6 +1,6 @@
-pub trait ToDet<T, I> {
-    fn tokenize(&self, item: I) -> T;
+pub trait Prism<T, I> {
+    fn merge(&self, item: I) -> T;
     fn check(&self, token: T) -> bool;
     fn inspect(&self, token: &T) -> Option<&I>;
-    fn detokenize(&self, token: T) -> Option<I>;
+    fn split(&self, token: T) -> Option<I>;
 }

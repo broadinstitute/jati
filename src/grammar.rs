@@ -1,4 +1,4 @@
-use crate::todet::ToDet;
+use crate::todet::Prism;
 use crate::token_result::TokenResult;
 
 pub(crate) trait Grammar<I> {
@@ -6,7 +6,7 @@ pub(crate) trait Grammar<I> {
 }
 
 pub struct Map<I, A, R, F: Fn(A) -> R> {
-    arg_todet: Box<dyn ToDet<I, A>>,
-    result_todet: Box<dyn ToDet<I, R>>,
+    arg_prism: Box<dyn Prism<I, A>>,
+    result_prism: Box<dyn Prism<I, R>>,
     map: F
 }
