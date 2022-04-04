@@ -13,7 +13,7 @@ mod grammar;
 mod engine;
 mod stream;
 mod sub_queue;
-mod todet;
+mod prism;
 mod parse_run;
 mod token_result;
 

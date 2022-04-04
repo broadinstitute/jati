@@ -1,7 +1,7 @@
-use crate::todet::Prism;
+use crate::prism::Prism;
 use crate::token_result::TokenResult;
 
-pub(crate) trait Grammar<I> {
+pub trait Grammar<I> {
     fn first_item(&self, item: &I) -> TokenResult<I>;
 }
 
