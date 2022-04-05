@@ -4,15 +4,16 @@ use crate::grammar::Grammar;
 
 pub struct Lexing<I, K, J, T: TokenIter<Item=I>> {
     iter: T,
-    in_prism: Box<dyn Prism<I, K>>,
-    out_prism: Box<dyn Prism<J, K>>,
+    input_prism: Box<dyn Prism<I, K>>,
+    output_prism: Box<dyn Prism<J, K>>,
     grammar: Box<dyn Grammar<K>>,
 }
 
 impl<I, K, J, T: TokenIter<Item=I>> Lexing<I, K, J, T> {
-    pub(crate) fn new(iter: T, in_prism: Box<dyn Prism<I, K>>, out_prism: Box<dyn Prism<J, K>>,
-                      grammar: Box<dyn Grammar<K>>) -> Lexing<I, K, J, T> {
-        Lexing { iter, in_prism, out_prism, grammar }
+    pub(crate) fn new(iter: T, input_prism: Box<dyn Prism<I, K>>,
+                      output_prism: Box<dyn Prism<J, K>>, grammar: Box<dyn Grammar<K>>)
+                      -> Lexing<I, K, J, T> {
+        Lexing { iter, input_prism, output_prism, grammar }
     }
 }
 
@@ -24,6 +25,4 @@ impl<I, K, J, T: TokenIter<Item=I>> TokenIterCore for Lexing<I, K, J, T> {
     }
 }
 
-impl<I, K, J, T: TokenIter<Item=I>> TokenIter for Lexing<I, K, J, T> {
-
-}
+impl<I, K, J, T: TokenIter<Item=I>> TokenIter for Lexing<I, K, J, T> {}

@@ -1,37 +1,52 @@
 use std::collections::HashMap;
 use std::ops::Range;
 
-type K = u64;
+#[derive(Clone, Copy, Hash, PartialEq, Eq)]
+pub struct Key {
+    num: u64,
+}
+
+struct KeyFactory {
+    counter: u64,
+}
+
+impl KeyFactory {
+    fn new() -> KeyFactory {
+        let counter = 0_u64;
+        KeyFactory { counter }
+    }
+    fn create_key(&mut self) -> Key {
+        let key = Key { num: self.counter };
+        self.counter += 1;
+        key
+    }
+}
 
 pub(crate) struct SubQueue<V> {
-    items: HashMap<K, V>,
-    keys: Vec<K>,
-    index: HashMap<K, usize>,
-    key_counter: K,
+    key_factory: KeyFactory,
+    items: HashMap<Key, V>,
+    keys: Vec<Key>,
+    index: HashMap<Key, usize>,
 }
 
 enum SubQueueError {
     KeyListEmpty,
-    NoSuchKey(K),
-    WrongKeyAt(usize, K, K)
+    NoSuchKey(Key),
+    WrongKeyAt(usize, Key, Key),
 }
 
 impl<V> SubQueue<V> {
     pub(crate) fn new() -> SubQueue<V> {
-        let items = HashMap::<K, V>::new();
-        let keys = Vec::<K>::new();
-        let index = HashMap::<K, usize>::new();
-        let key_counter = 0_u64;
-        SubQueue { items, keys, index, key_counter }
+        let key_factory = KeyFactory::new();
+        let items = HashMap::<Key, V>::new();
+        let keys = Vec::<Key>::new();
+        let index = HashMap::<Key, usize>::new();
+        SubQueue { key_factory, items, keys, index }
     }
     pub(crate) fn is_empty(&self) -> bool { self.keys.is_empty() }
     fn len(&self) -> usize { self.keys.len() }
-    fn new_key(&mut self) -> K {
-        self.key_counter += 1;
-        self.key_counter
-    }
-    pub(crate) fn push(&mut self, item: V) -> K {
-        let key = self.new_key();
+    pub(crate) fn push(&mut self, item: V) -> Key {
+        let key = self.key_factory.create_key();
         self.items.insert(key, item);
         self.keys.push(key);
         key
@@ -44,9 +59,9 @@ impl<V> SubQueue<V> {
             self.items.remove(&key)
         }
     }
-    fn contains_key(&self, key: &K) -> bool { self.items.contains_key(key) }
-    fn get(&self, key: &K) -> Option<&V> { self.items.get(key) }
-    fn find_key_index(&self, key: &K) -> Option<usize> {
+    fn contains_key(&self, key: &Key) -> bool { self.items.contains_key(key) }
+    fn get(&self, key: &Key) -> Option<&V> { self.items.get(key) }
+    fn find_key_index(&self, key: &Key) -> Option<usize> {
         for i in 0..self.keys.len() {
             if *key == self.keys[i] {
                 return Some(i);
@@ -54,29 +69,29 @@ impl<V> SubQueue<V> {
         }
         None
     }
-    fn remove(&mut self, key: &K) -> Option<V> {
+    fn remove(&mut self, key: &Key) -> Option<V> {
         self.find_key_index(key).map(|i_key| { self.keys.remove(i_key) });
         self.items.remove(key)
     }
-    fn find_keys(&self, keys: &[K]) -> Result<Range<usize>, SubQueueError> {
+    fn find_keys(&self, keys: &[Key]) -> Result<Range<usize>, SubQueueError> {
         if keys.is_empty() {
             return Err(SubQueueError::KeyListEmpty);
         }
         let key0 = &keys[0];
         let i_begin =
             self.find_key_index(&keys[0]).ok_or(SubQueueError::NoSuchKey(*key0))?;
-        let range = i_begin .. (i_begin + keys.len());
+        let range = i_begin..(i_begin + keys.len());
         for i in range.clone() {
             let key_expected = &keys[i - i_begin];
             let key_actual = &self.keys[i];
             if key_expected != key_actual {
-                return Err(SubQueueError::WrongKeyAt(i, *key_expected, *key_actual))
+                return Err(SubQueueError::WrongKeyAt(i, *key_expected, *key_actual));
             }
         }
         Ok(range)
     }
-    fn replace(&mut self, keys_to_remove: &[K], items_to_add: Vec<V>)
-               -> Result<(Vec<V>, Vec<K>), SubQueueError> {
+    fn replace(&mut self, keys_to_remove: &[Key], items_to_add: Vec<V>)
+               -> Result<(Vec<V>, Vec<Key>), SubQueueError> {
         let range_to_remove = self.find_keys(keys_to_remove)?;
         let mut items_removed = Vec::<V>::new();
         let mut error: Option<SubQueueError> = None;
@@ -91,9 +106,9 @@ impl<V> SubQueue<V> {
                 }
             }
         }
-        let mut keys_added = Vec::<K>::new();
+        let mut keys_added = Vec::<Key>::new();
         for item_to_add in items_to_add {
-            let key_new = self.new_key();
+            let key_new = self.key_factory.create_key();
             keys_added.push(key_new);
             self.items.insert(key_new, item_to_add);
         }
