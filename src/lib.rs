@@ -15,7 +15,7 @@ mod stream;
 mod sub_queue;
 mod prism;
 mod parse_run;
-mod token_result;
+mod parse_match;
 
 pub fn scan_string(string: String) -> impl TokenIter<Item=CodePoint> {
     let bytes_iter = string.into_bytes().into_iter();

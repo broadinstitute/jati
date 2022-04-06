@@ -1,14 +1,14 @@
 use crate::error::ParseError;
 use crate::token::Token;
 
-pub enum TokenResult<I> {
+pub enum ParseMatch<I> {
     Ongoing(Box<dyn Ongoing<I>>),
     Complete(Complete<I>),
     Error(ParseError)
 }
 
 pub trait Ongoing<I> {
-    fn next_token(&self, token: Token<I>) -> TokenResult<I>;
+    fn apply_next(&self, token: Token<I>) -> ParseMatch<I>;
 }
 
 pub struct Complete<I> {

@@ -1,8 +1,8 @@
 use crate::prism::Prism;
-use crate::token_result::TokenResult;
+use crate::parse_match::ParseMatch;
 
 pub trait Grammar<I> {
-    fn first_item(&self, item: &I) -> TokenResult<I>;
+    fn apply_start(&self, item: &I) -> ParseMatch<I>;
 }
 
 pub struct Map<I, A, R, F: Fn(A) -> R> {
