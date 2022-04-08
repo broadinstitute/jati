@@ -9,12 +9,11 @@ pub mod code_point;
 mod util;
 mod error;
 mod line_break;
-mod grammar;
+mod parser;
 mod engine;
 mod stream;
 mod sub_queue;
 mod prism;
-mod parse_run;
 mod parse_match;
 
 pub fn scan_string(string: String) -> impl TokenIter<Item=CodePoint> {
