@@ -3,7 +3,7 @@ use crate::token::Token;
 use crate::sub_queue::Key;
 use std::marker::PhantomData;
 
-pub(crate) struct Matcher<I> {
+pub struct Matcher<I> {
     ghost: PhantomData<I>
 }
 
