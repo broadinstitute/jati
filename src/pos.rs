@@ -8,26 +8,9 @@ pub struct Pos {
     char_in_line_count: usize,
 }
 
-pub(crate) const POS_ZERO: Pos = Pos { byte_count: 0, char_count: 0, line_count: 0, char_in_line_count: 0 };
-
 impl Pos {
-    pub(crate) fn new() -> Pos { POS_ZERO }
     fn line(&self) -> usize { self.line_count + 1 }
     fn col(&self) -> usize { self.char_in_line_count + 1 }
-    pub(crate) fn add_char(&self, n_bytes: usize) -> Pos {
-        let byte_count = self.byte_count + n_bytes;
-        let char_count = self.char_count + 1;
-        let line_count = self.line_count;
-        let char_in_line_count = self.char_in_line_count + 1;
-        Pos { byte_count, char_count, line_count, char_in_line_count }
-    }
-    pub(crate) fn break_line(&self) -> Pos {
-        let byte_count = self.byte_count;
-        let char_count = self.char_count;
-        let line_count = self.line_count + 1;
-        let char_in_line_count = 0;
-        Pos { byte_count, char_count, line_count, char_in_line_count }
-    }
 }
 
 impl Display for Pos {
