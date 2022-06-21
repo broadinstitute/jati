@@ -1,12 +1,18 @@
 use std::fmt::{Debug, Display, Formatter};
 
-enum ErrorKind {
+pub(crate) enum ErrorKind {
     OutOfRange
 }
 
 pub(crate) struct Error {
     kind: ErrorKind,
     message: String
+}
+
+impl Error {
+    pub(crate) fn new(kind: ErrorKind, message: String) -> Error {
+        Error { kind, message }
+    }
 }
 
 impl Display for ErrorKind {
