@@ -1,7 +1,7 @@
 use crate::buf::Buf;
 
 pub struct Jati {
-    buf: Buf<u8>
+    buf: Buf<u8>,
 }
 
 impl Jati {
@@ -9,4 +9,5 @@ impl Jati {
         let buf = Buf::new(vec!(data));
         Jati { buf }
     }
+    pub fn len_buffer(&self) -> usize { self.buf.len() }
 }
