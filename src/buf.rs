@@ -1,6 +1,9 @@
+mod cursor;
+
 use std::ops::Deref;
 use std::sync::Arc;
 
+#[derive(Clone, Copy)]
 struct Pos {
     i_chunk: usize,
     i_in_chunk: usize,
