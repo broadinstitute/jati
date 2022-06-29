@@ -4,7 +4,7 @@ use std::ops::Deref;
 use std::sync::Arc;
 
 #[derive(Clone, Copy)]
-struct Pos {
+pub(crate) struct Pos {
     i_chunk: usize,
     i_in_chunk: usize,
 }
