@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::rc::Rc;
 use crate::buf::{Buf, BufBox};
 
 pub struct Jati {
@@ -14,7 +14,7 @@ impl Jati {
 
 impl From<Vec<u8>> for Jati {
     fn from(data: Vec<u8>) -> Self {
-        let buf = BufBox::new(Arc::new(Buf::new(vec!(data))));
+        let buf = BufBox::new(Rc::new(Buf::new(vec!(data))));
         Jati::new(buf)
     }
 }

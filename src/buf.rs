@@ -1,7 +1,7 @@
 mod cursor;
 
 use std::ops::Deref;
-use std::sync::Arc;
+use std::rc::Rc;
 
 #[derive(Clone, Copy)]
 pub(crate) struct Pos {
@@ -15,7 +15,7 @@ pub struct Buf {
 }
 
 pub(crate) struct BufBox {
-    buf: Arc<Buf>,
+    buf: Rc<Buf>,
 }
 
 impl Buf {
@@ -38,7 +38,7 @@ impl Buf {
 }
 
 impl BufBox {
-    pub(crate) fn new(buf: Arc<Buf>) -> BufBox {
+    pub(crate) fn new(buf: Rc<Buf>) -> BufBox {
         BufBox { buf }
     }
 }
