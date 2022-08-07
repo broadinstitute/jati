@@ -1,6 +1,7 @@
 use std::cmp::Ordering;
+use std::iter;
 
-struct NonEmptySet<T: Ord> {
+pub(crate) struct NonEmptySet<T: Ord> {
     before: Option<Box<NonEmptySet<T>>>,
     item: T,
     after: Option<Box<NonEmptySet<T>>>
@@ -38,61 +39,21 @@ impl<T: Ord> NonEmptySet<T> {
             }
         }
     }
-    pub fn iter(&self) -> NonEmptySetIter<T> {
-        NonEmptySetIter::new(self)
-    }
-}
-
-enum IterStage {
-    BeforeIsNext,
-    NowAtBefore,
-    ItemIsNext,
-    AfterIsNext,
-    NowAtAfter,
-    Exhausted
-}
-
-struct NonEmptySetIter<'a, T: Ord> {
-    set: &'a NonEmptySet<T>,
-    sub_iter: Option<Box<NonEmptySetIter<'a, T>>>,
-    stage: IterStage
-}
-
-impl<T: Ord> NonEmptySetIter<'_, T>{
-    fn new(set: &NonEmptySet<T>) -> NonEmptySetIter<T> {
-        let sub_iter: Option<Box<NonEmptySetIter<T>>> = None;
-        let stage = IterStage::BeforeIsNext;
-        NonEmptySetIter { set, sub_iter, stage }
-    }
-}
-
-impl<'a, T: Ord> Iterator for NonEmptySetIter<'a, T> {
-    type Item = T;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        loop {
-            match self.stage {
-                IterStage::BeforeIsNext => {
-                    match &self.set.before {
-                        None => {
-                            self.stage = IterStage::ItemIsNext
-                        }
-                        Some(before) => {
-                            self.sub_iter = Some(Box::new(before.iter()));
-                            self.stage = IterStage::NowAtBefore;
-                        }
-                    }
-                }
-                IterStage::NowAtBefore => {
-
-                }
-                IterStage::ItemIsNext => {}
-                IterStage::AfterIsNext => {}
-                IterStage::NowAtAfter => {}
-                IterStage::Exhausted => {}
+    pub fn iter(&self) -> Box<dyn Iterator<Item=&T> + '_> {
+        let item_iter = iter::once(&self.item);
+        match (&self.before, &self.after) {
+            (Some(before), Some(after)) => {
+                Box::new(before.iter().chain(item_iter).chain(after.iter()))
+            },
+            (Some(before), None) => {
+                Box::new(before.iter().chain(item_iter))
             }
-
+            (None, Some(after)) => {
+                Box::new(item_iter.chain(after.iter()))
+            },
+            (None, None) => {
+                Box::new(item_iter)
+            }
         }
     }
 }
-

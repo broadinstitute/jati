@@ -1,2 +1,2 @@
-mod ne_set;
+pub(crate) mod ne_set;
 

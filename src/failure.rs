@@ -1,13 +1,14 @@
 use std::fmt::{Display, Formatter};
 use crate::kind::Kind;
+use crate::util::ne_set::NonEmptySet;
 
 pub(crate) struct Failure {
     actual: Kind,
-    expected: Vec<Kind>,
+    expected: NonEmptySet<Kind>,
 }
 
 impl Failure {
-    pub(crate) fn new(actual: Kind, expected: Vec<Kind>) -> Failure {
+    pub(crate) fn new(actual: Kind, expected: NonEmptySet<Kind>) -> Failure {
         Failure { actual, expected }
     }
 }
