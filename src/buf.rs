@@ -1,25 +1,17 @@
-mod cursor;
-
 use std::ops::Deref;
 use std::rc::Rc;
 
 #[derive(Clone, Copy)]
-pub(crate) struct Pos {
-    i_chunk: usize,
-    i_in_chunk: usize,
-}
+pub(crate) struct Pos {}
 
-pub struct Buf {
-    chunks: Vec<Vec<u8>>,
-    len_sums: Vec<usize>,
-}
+pub(crate) struct Buf {}
 
 pub(crate) struct BufBox {
     buf: Rc<Buf>,
 }
 
 impl Buf {
-    fn get_len_sums(chunks: &Vec<Vec<u8>>) -> Vec<usize> {
+    pub(crate) fn get_len_sums(chunks: &Vec<Vec<u8>>) -> Vec<usize> {
         let mut len_sums: Vec<usize> = Vec::new();
         let mut len_sum: usize = 0;
         for chunk in chunks {
@@ -28,12 +20,8 @@ impl Buf {
         }
         len_sums
     }
-    pub(crate) fn new(chunks: Vec<Vec<u8>>) -> Buf {
-        let len_sums = Buf::get_len_sums(&chunks);
-        Buf { chunks, len_sums }
-    }
-    pub(crate) fn len(&self) -> usize {
-        *self.len_sums.last().unwrap_or(&0usize)
+    pub(crate) fn new() -> Buf {
+        Buf {}
     }
 }
 

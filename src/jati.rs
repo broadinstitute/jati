@@ -1,7 +1,7 @@
 use std::rc::Rc;
 use crate::buf::{Buf, BufBox};
 
-pub struct Jati {
+pub(crate) struct Jati {
     buf: BufBox,
 }
 
@@ -9,12 +9,11 @@ impl Jati {
     fn new(buf: BufBox) -> Jati {
         Jati { buf }
     }
-    pub fn len_buffer(&self) -> usize { self.buf.len() }
 }
 
 impl From<Vec<u8>> for Jati {
     fn from(data: Vec<u8>) -> Self {
-        let buf = BufBox::new(Rc::new(Buf::new(vec!(data))));
+        let buf = BufBox::new(Rc::new(Buf::new()));
         Jati::new(buf)
     }
 }
