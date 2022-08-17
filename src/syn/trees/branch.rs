@@ -18,12 +18,6 @@ pub(crate) struct Syntax {
     parts: &'static [SyntaxPart],
 }
 
-impl Syntax {
-    pub(crate) fn arity(&self) -> usize {
-        self.parts.iter().filter(|part| { matches!(part, SyntaxPart::Tree) }).count()
-    }
-}
-
 pub struct Branch {
     syntax: &'static Syntax,
     children: Vec<Tree>,
