@@ -1,6 +1,6 @@
-use std::cmp::{max, min, Ordering};
+use std::cmp::Ordering;
 use std::collections::HashMap;
-use nom::error::{ErrorKind, ParseError};
+use nom::error::{ContextError, ErrorKind, ParseError};
 use crate::parse::Span;
 
 #[derive(Copy, Clone, Eq, PartialEq)]
@@ -30,6 +30,7 @@ impl<'a> From<Span<'a>> for Pos {
 enum PathPartKind {
     Char(char),
     Kind(ErrorKind),
+    Context(String)
 }
 
 impl PathPartKind {
@@ -37,6 +38,7 @@ impl PathPartKind {
         match self {
             PathPartKind::Char(c) => { String::from(*c) }
             PathPartKind::Kind(kind) => { String::from(kind.description()) }
+            PathPartKind::Context(string) => { string.clone() }
         }
     }
 }
@@ -47,6 +49,14 @@ impl From<ErrorKind> for PathPartKind {
 
 impl From<char> for PathPartKind {
     fn from(c: char) -> Self { PathPartKind::Char(c) }
+}
+
+impl From<String> for PathPartKind {
+    fn from(string: String) -> Self { PathPartKind::Context(string) }
+}
+
+impl From<&str> for PathPartKind {
+    fn from(string: &str) -> Self { PathPartKind::Context(String::from(string)) }
 }
 
 struct PathNode {
@@ -98,6 +108,15 @@ impl PError {
         let paths = vec!(node);
         Self::new(lines, paths)
     }
+    fn append_node(input: Span, kind: PathPartKind, other: Self) -> Self {
+        let PError { lines: mut other_lines, paths: other_paths } = other;
+        let pos = Pos::from(input);
+        let i_line = pos.i_line;
+        other_lines.entry(i_line).or_insert_with(|| { get_line(input) });
+        let lines = other_lines;
+        let paths = vec!(PathNode::new(kind, pos, other_paths));
+        PError::new(lines, paths)
+    }
     pub(crate) fn create_report(&self) -> String {
         todo!()
     }
@@ -118,14 +137,8 @@ impl<'a> ParseError<Span<'a>> for PError {
     }
 
     fn append(input: Span<'a>, kind: ErrorKind, other: Self) -> Self {
-        let PError { lines: mut other_lines, paths: other_paths } = other;
-        let pos = Pos::from(input);
-        let i_line = pos.i_line;
-        other_lines.entry(i_line).or_insert_with(|| { get_line(input) });
-        let lines = other_lines;
         let kind = PathPartKind::from(kind);
-        let paths = vec!(PathNode::new(kind, pos, other_paths));
-        PError::new(lines, paths)
+        PError::append_node(input, kind, other)
     }
 
     fn from_char(input: Span<'a>, c: char) -> Self {
@@ -147,5 +160,12 @@ impl<'a> ParseError<Span<'a>> for PError {
         paths_self.append(&mut paths_other);
         let paths = paths_self;
         PError::new(lines, paths)
+    }
+}
+
+impl<'a> ContextError<Span<'a>> for PError {
+    fn add_context(input: Span<'a>, ctx: &'static str, other: Self) -> Self {
+        let kind = PathPartKind::from(ctx);
+        PError::append_node(input, kind, other)
     }
 }
