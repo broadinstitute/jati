@@ -1,4 +1,5 @@
 use std::cmp::{max, min, Ordering};
+use std::collections::HashMap;
 use nom::error::{ErrorKind, ParseError};
 use crate::parse::Span;
 
@@ -26,37 +27,18 @@ impl<'a> From<Span<'a>> for Pos {
     }
 }
 
-struct Fragment {
-    string: String,
-    pos: Pos,
-}
-
-impl Fragment {
-    fn i_byte_end(&self) -> usize {
-        self.pos.i_byte + self.string.len()
-    }
-    fn combine(&self, other: &Fragment) -> Fragment {
-        let pos = min(self.pos, other.pos);
-        let end = max(self.i_byte_end(), other.i_byte_end());
-        let len = end - pos.i_byte;
-        let mut string = str::repeat(".", len);
-        string.replace_range(self.pos.i_byte..self.i_byte_end(), &self.string);
-        string.replace_range(other.pos.i_byte..other.i_byte_end(), &other.string);
-        Fragment { string, pos }
-    }
-}
-
-impl<'a> From<Span<'a>> for Fragment {
-    fn from(span: Span<'a>) -> Self {
-        let string = String::from(*span.fragment());
-        let pos = Pos::from(span);
-        Fragment { string, pos }
-    }
-}
-
 enum PathPartKind {
     Char(char),
     Kind(ErrorKind),
+}
+
+impl PathPartKind {
+    fn get_string(&self) -> String {
+        match self {
+            PathPartKind::Char(c) => { String::from(*c) }
+            PathPartKind::Kind(kind) => { String::from(kind.description()) }
+        }
+    }
 }
 
 impl From<ErrorKind> for PathPartKind {
@@ -73,6 +55,11 @@ struct PathNode {
     children: Vec<PathNode>,
 }
 
+struct Label {
+    i_col: usize,
+    string: String,
+}
+
 impl PathNode {
     fn new(kind: PathPartKind, pos: Pos, children: Vec<PathNode>) -> Self {
         PathNode { kind, pos, children }
@@ -81,54 +68,84 @@ impl PathNode {
         let children: Vec<PathNode> = Vec::new();
         PathNode { kind, pos, children }
     }
+    fn get_label(&self) -> Label {
+        let i_col = self.pos.i_col;
+        let string = self.kind.get_string();
+        Label { i_col, string }
+    }
+    fn get_labels(&self) -> Vec<Label> {
+        let mut labels: Vec<Label> = Vec::new();
+        for child in &self.children {
+            labels.append(&mut child.get_labels());
+        }
+        labels.push(self.get_label());
+        labels
+    }
 }
 
+type Lines = HashMap<u32, String>;
+
 pub(crate) struct PError {
-    fragment: Fragment,
+    lines: Lines,
     paths: Vec<PathNode>,
 }
 
 impl PError {
-    fn new(fragment: Fragment, paths: Vec<PathNode>) -> Self {
-        PError { fragment, paths }
+    fn new(lines: Lines, paths: Vec<PathNode>) -> Self { PError { lines, paths } }
+    fn from_single(i_line: u32, line: String, node: PathNode) -> Self {
+        let mut lines: Lines = HashMap::new();
+        lines.insert(i_line, line);
+        let paths = vec!(node);
+        Self::new(lines, paths)
     }
     pub(crate) fn create_report(&self) -> String {
         todo!()
     }
 }
 
+fn get_line(span: Span) -> String {
+    String::from_utf8_lossy(span.get_line_beginning()).to_string()
+}
+
 impl<'a> ParseError<Span<'a>> for PError {
     fn from_error_kind(input: Span<'a>, kind: ErrorKind) -> Self {
-        let fragment = Fragment::from(input);
+        let line = get_line(input);
         let kind = PathPartKind::from(kind);
-        let pos = fragment.pos;
-        let paths = vec!(PathNode::new_leaf(kind, pos));
-        PError::new(fragment, paths)
+        let pos = Pos::from(input);
+        let i_line = pos.i_line;
+        let path = PathNode::new_leaf(kind, pos);
+        PError::from_single(i_line, line, path)
     }
 
     fn append(input: Span<'a>, kind: ErrorKind, other: Self) -> Self {
-        let fragment_new = Fragment::from(input);
-        let pos = fragment_new.pos;
-        let fragment = fragment_new.combine(&other.fragment);
+        let PError { lines: mut other_lines, paths: other_paths } = other;
+        let pos = Pos::from(input);
+        let i_line = pos.i_line;
+        other_lines.entry(i_line).or_insert_with(|| { get_line(input) });
+        let lines = other_lines;
         let kind = PathPartKind::from(kind);
-        let paths = vec!(PathNode::new(kind, pos, other.paths));
-        PError::new(fragment, paths)
+        let paths = vec!(PathNode::new(kind, pos, other_paths));
+        PError::new(lines, paths)
     }
 
     fn from_char(input: Span<'a>, c: char) -> Self {
-        let fragment = Fragment::from(input);
+        let line = get_line(input);
         let kind = PathPartKind::from(c);
-        let pos = fragment.pos;
-        let paths = vec!(PathNode::new_leaf(kind, pos));
-        PError::new(fragment, paths)
+        let pos = Pos::from(input);
+        let i_line = pos.i_line;
+        let path = PathNode::new_leaf(kind, pos);
+        PError::from_single(i_line, line, path)
     }
 
     fn or(self, other: Self) -> Self {
-        let PError { fragment: frag_self, paths: mut paths_self } = self;
-        let PError { fragment: frag_other, paths: mut paths_other } = other;
-        let fragment = frag_self.combine(&frag_other);
+        let PError { lines: mut lines_self, paths: mut paths_self } = self;
+        let PError { lines: lines_other, paths: mut paths_other } = other;
+        for (i_line, line) in lines_other {
+            lines_self.insert(i_line, line);
+        }
+        let lines = lines_self;
         paths_self.append(&mut paths_other);
         let paths = paths_self;
-        PError::new(fragment, paths)
+        PError::new(lines, paths)
     }
 }
