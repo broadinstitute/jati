@@ -1,5 +1,5 @@
 use std::cmp::Ordering;
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 use nom::error::{ContextError, ErrorKind, ParseError};
 use crate::parse::Span;
 
@@ -70,6 +70,39 @@ struct Label {
     string: String,
 }
 
+struct LabelsByLine {
+    labels: BTreeMap<u32, Vec<Label>>
+}
+
+impl LabelsByLine {
+    fn new() -> LabelsByLine {
+        let labels = BTreeMap::<u32, Vec<Label>>::new();
+        LabelsByLine { labels }
+    }
+    fn push(&mut self, i_line: u32, label: Label) {
+        match self.labels.get_mut(&i_line) {
+            None => {
+                self.labels.insert(i_line, vec!(label));
+            }
+            Some(labels_for_line) => {
+                labels_for_line.push(label)
+            }
+        }
+    }
+    fn append(&mut self, other: Self) {
+        for (i_line, mut other_labels) in other.labels.into_iter() {
+            match self.labels.get_mut(&i_line) {
+                None => {
+                    self.labels.insert(i_line, other_labels);
+                }
+                Some(labels_for_line) => {
+                    labels_for_line.append(&mut other_labels)
+                }
+            }
+        }
+    }
+}
+
 impl PathNode {
     fn new(kind: PathPartKind, pos: Pos, children: Vec<PathNode>) -> Self {
         PathNode { kind, pos, children }
@@ -83,17 +116,17 @@ impl PathNode {
         let string = self.kind.get_string();
         Label { i_col, string }
     }
-    fn get_labels(&self) -> Vec<Label> {
-        let mut labels: Vec<Label> = Vec::new();
+    fn get_labels(&self) -> LabelsByLine {
+        let mut labels = LabelsByLine::new();
         for child in &self.children {
-            labels.append(&mut child.get_labels());
+            labels.append(child.get_labels());
         }
-        labels.push(self.get_label());
+        labels.push(self.pos.i_line, self.get_label());
         labels
     }
 }
 
-type Lines = HashMap<u32, String>;
+type Lines = BTreeMap<u32, String>;
 
 pub(crate) struct PError {
     lines: Lines,
@@ -103,7 +136,7 @@ pub(crate) struct PError {
 impl PError {
     fn new(lines: Lines, paths: Vec<PathNode>) -> Self { PError { lines, paths } }
     fn from_single(i_line: u32, line: String, node: PathNode) -> Self {
-        let mut lines: Lines = HashMap::new();
+        let mut lines = Lines::new();
         lines.insert(i_line, line);
         let paths = vec!(node);
         Self::new(lines, paths)
@@ -117,8 +150,26 @@ impl PError {
         let paths = vec!(PathNode::new(kind, pos, other_paths));
         PError::new(lines, paths)
     }
-    pub(crate) fn create_report(&self) -> String {
+    fn get_labels(&self) -> LabelsByLine {
+        let mut labels = LabelsByLine::new();
+        for path in &self.paths {
+            labels.append(path.get_labels())
+        }
+        labels
+    }
+    fn create_line_report(line: &str, labels: &[Label]) -> String {
+
         todo!()
+    }
+    pub(crate) fn create_report(&self) -> String {
+        let labels = self.get_labels();
+        let mut report = String::new();
+        for (i_line, line) in self.lines.iter() {
+            if let Some(labels_for_line) = labels.labels.get(i_line) {
+                report.push_str(&PError::create_line_report(line, labels_for_line))
+            }
+        }
+        report
     }
 }
 
