@@ -1,2 +1,2 @@
 # jati
-A user-friendly parser library
+DSL support library.

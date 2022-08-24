@@ -158,8 +158,13 @@ impl PError {
         labels
     }
     fn create_line_report(line: &str, labels: &[Label]) -> String {
-
-        todo!()
+        let mut label_lines = Vec::<String>::new();
+        for label in labels {
+            todo!()
+        }
+        let mut lines = vec!(String::from(line));
+        lines.append(&mut label_lines);
+        lines.join("\n")
     }
     pub(crate) fn create_report(&self) -> String {
         let labels = self.get_labels();
