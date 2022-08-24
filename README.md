@@ -1,2 +1,2 @@
 # jati
-DSL support library.
+DSL support library based on nom.
