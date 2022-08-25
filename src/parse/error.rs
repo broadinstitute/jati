@@ -1,5 +1,6 @@
 use std::cmp::Ordering;
 use std::collections::BTreeMap;
+use std::fmt::{Debug, Display, Formatter};
 use nom::error::{ContextError, ErrorKind, ParseError};
 use crate::parse::Span;
 
@@ -137,7 +138,7 @@ impl PathNode {
 
 type Lines = BTreeMap<u32, String>;
 
-pub(crate) struct PError {
+pub struct PError {
     lines: Lines,
     paths: Vec<PathNode>,
 }
@@ -265,5 +266,17 @@ impl<'a> ContextError<Span<'a>> for PError {
     fn add_context(input: Span<'a>, ctx: &'static str, other: Self) -> Self {
         let kind = PathPartKind::from(ctx);
         PError::append_node(input, kind, other)
+    }
+}
+
+impl Display for PError {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        writeln!(f, "\n{}", self.create_report())
+    }
+}
+
+impl Debug for PError {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        writeln!(f, "\n{}", self.create_report())
     }
 }
