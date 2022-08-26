@@ -1,7 +1,8 @@
 use std::cmp::Ordering;
 use std::collections::BTreeMap;
+use std::error::Error;
 use std::fmt::{Debug, Display, Formatter};
-use nom::error::{ContextError, ErrorKind, ParseError};
+use nom::error::{ContextError, ErrorKind, FromExternalError, ParseError};
 use crate::parse::Span;
 
 #[derive(Copy, Clone, Eq, PartialEq)]
@@ -31,6 +32,7 @@ impl<'a> From<Span<'a>> for Pos {
 enum PathPartKind {
     Char(char),
     Kind(ErrorKind),
+    KindPlus(ErrorKind, String),
     Context(String),
 }
 
@@ -39,6 +41,9 @@ impl PathPartKind {
         match self {
             PathPartKind::Char(c) => { String::from(*c) }
             PathPartKind::Kind(kind) => { String::from(kind.description()) }
+            PathPartKind::KindPlus(kind, message) => {
+                format!("{}: {}", kind.description(), message)
+            }
             PathPartKind::Context(string) => { string.clone() }
         }
     }
@@ -151,6 +156,13 @@ impl PError {
         let paths = vec!(node);
         Self::new(lines, paths)
     }
+    fn from_path_kind(input: Span, kind: PathPartKind) -> Self {
+        let line = get_line(input);
+        let pos = Pos::from(input);
+        let i_line = pos.i_line;
+        let path = PathNode::new_leaf(kind, pos);
+        PError::from_single(i_line, line, path)
+    }
     fn append_node(input: Span, kind: PathPartKind, other: Self) -> Self {
         let PError { lines: mut other_lines, paths: other_paths } = other;
         let pos = Pos::from(input);
@@ -227,12 +239,8 @@ fn get_line(span: Span) -> String {
 
 impl<'a> ParseError<Span<'a>> for PError {
     fn from_error_kind(input: Span<'a>, kind: ErrorKind) -> Self {
-        let line = get_line(input);
         let kind = PathPartKind::from(kind);
-        let pos = Pos::from(input);
-        let i_line = pos.i_line;
-        let path = PathNode::new_leaf(kind, pos);
-        PError::from_single(i_line, line, path)
+        PError::from_path_kind(input, kind)
     }
 
     fn append(input: Span<'a>, kind: ErrorKind, other: Self) -> Self {
@@ -241,12 +249,8 @@ impl<'a> ParseError<Span<'a>> for PError {
     }
 
     fn from_char(input: Span<'a>, c: char) -> Self {
-        let line = get_line(input);
         let kind = PathPartKind::from(c);
-        let pos = Pos::from(input);
-        let i_line = pos.i_line;
-        let path = PathNode::new_leaf(kind, pos);
-        PError::from_single(i_line, line, path)
+        PError::from_path_kind(input, kind)
     }
 
     fn or(self, other: Self) -> Self {
@@ -266,6 +270,13 @@ impl<'a> ContextError<Span<'a>> for PError {
     fn add_context(input: Span<'a>, ctx: &'static str, other: Self) -> Self {
         let kind = PathPartKind::from(ctx);
         PError::append_node(input, kind, other)
+    }
+}
+
+impl<'a, E: Error> FromExternalError<Span<'a>, E> for PError {
+    fn from_external_error(input: Span<'a>, kind: ErrorKind, error: E) -> Self {
+        let kind = PathPartKind::KindPlus(kind, error.to_string());
+        PError::from_path_kind(input, kind)
     }
 }
 
