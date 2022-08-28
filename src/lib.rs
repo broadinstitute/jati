@@ -2,7 +2,7 @@ use nom::bytes::complete::tag;
 use crate::parse::{Parser, PResult, Span};
 
 mod error;
-pub mod syn;
+pub mod grammar;
 pub mod parse;
 
 pub fn parse_string<'a, T, P>(parser: P, string: &'a str) -> PResult<T>
