@@ -2,16 +2,16 @@ use nom::bytes::complete::tag;
 use nom::combinator::recognize;
 use crate::{Span, SParser};
 use nom::Parser;
+use crate::parse::error::PError;
 
-pub trait WhiteSpace {
-    fn parser<'a, 'b>(&self) -> Box<dyn SParser<'a, Span<'b>>>;
+pub trait WhiteSpace<'a> {
+    fn parser(&self) -> Box<dyn SParser<'a, Span<'a>>>;
 }
 
 struct RustWhiteSpace {}
 
-impl WhiteSpace for RustWhiteSpace {
-    fn parser<'a, 'b>(&self) -> Box<dyn SParser<'a, Span<'b>>> {
-        let x = recognize(tag(" "));
-        Box::from(x)
+impl<'a> WhiteSpace<'a> for RustWhiteSpace {
+    fn parser(&self) -> Box<dyn SParser<'a, Span<'a>>> {
+        Box::new(recognize(tag::<&str, Span<'a>, PError>(" ")))
     }
 }

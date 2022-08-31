@@ -5,7 +5,7 @@ mod error;
 pub mod grammar;
 pub mod parse;
 
-pub fn parse_string<'a, T, P>(parser: P, string: &'a str) -> PResult<T>
+pub fn parse_string<'a, T, P>(mut parser: P, string: &'a str) -> PResult<T>
     where P: SParser<'a, T>
 {
     let span = Span::new(string);
