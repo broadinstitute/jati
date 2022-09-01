@@ -1,17 +1,26 @@
 use nom::bytes::complete::tag;
+use nom::combinator::map;
 use crate::parse::{SParser, PResult, Span};
 
 mod error;
 pub mod grammar;
 pub mod parse;
 
-pub fn parse_string<'a, T, P>(mut parser: P, string: &'a str) -> PResult<T>
-    where P: SParser<'a, T>
+pub fn parse_string<T, P>(parser: P, string: &str) -> PResult<T>
+    where P: SParser<T>
 {
     let span = Span::new(string);
-    parser(span)
+    parser.parse_span(span)
 }
 
-pub fn first_parser<'a>() -> impl SParser<'a, Span<'a>> {
-    tag("Hello")
+pub struct FirstParser {}
+
+impl SParser<()> for FirstParser {
+    fn parse_span<'a>(&self, span: Span<'a>) -> PResult<'a, ()> {
+        map(tag("Hello"), |_| {})(span)
+    }
+}
+
+impl FirstParser {
+    pub fn new() -> FirstParser { FirstParser {} }
 }

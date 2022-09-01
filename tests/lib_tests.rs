@@ -1,5 +1,5 @@
-use jati::{first_parser, parse_string};
-use jati::parse::PResult;
+use jati::{FirstParser, parse_string};
+use jati::parse::{PResult, SParser};
 
 fn print_error<T>(result: PResult<T>) -> PResult<T> {
     if let Err(error) = &result {
@@ -10,16 +10,19 @@ fn print_error<T>(result: PResult<T>) -> PResult<T> {
 
 #[test]
 fn hello() {
-    assert!(print_error(parse_string(first_parser(), "Hello")).is_ok());
+    let first_parser = FirstParser::new();
+    assert!(print_error(parse_string(first_parser, "Hello")).is_ok());
 }
 
 #[test]
 fn hi() {
-    assert!(print_error(parse_string(first_parser(), "Hi")).is_err());
+    let first_parser = FirstParser::new();
+    assert!(print_error(parse_string(first_parser, "Hi")).is_err());
 }
 
 #[test]
 fn good() {
-    assert!(print_error(parse_string(first_parser(), "Good day")).is_err());
+    let first_parser = FirstParser::new();
+    assert!(print_error(parse_string(first_parser, "Good day")).is_err());
 }
 
