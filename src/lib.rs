@@ -24,3 +24,9 @@ impl SParser<()> for FirstParser {
 impl FirstParser {
     pub fn new() -> FirstParser { FirstParser {} }
 }
+
+impl Default for FirstParser {
+    fn default() -> Self {
+        Self::new()
+    }
+}
