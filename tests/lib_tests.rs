@@ -15,6 +15,12 @@ fn hello() {
 }
 
 #[test]
+fn hello_world() {
+    let first_parser = FirstParser::new();
+    assert!(print_error(parse_string(first_parser, "Hello, world!")).is_ok());
+}
+
+#[test]
 fn hi() {
     let first_parser = FirstParser::new();
     assert!(print_error(parse_string(first_parser, "Hi")).is_err());

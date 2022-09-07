@@ -14,10 +14,3 @@ pub trait SParser<T> {
         self.parse_span(span)
     }
 }
-
-// pub trait SParser<'a, T>: FnMut(Span) -> PResult<'a, T> {}
-//
-// impl<'a, T, P> SParser<'a, T> for P
-//     where
-//         P: FnMut(Span) -> PResult<'a, T>
-// {}
