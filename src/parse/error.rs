@@ -34,6 +34,7 @@ enum PathPartKind {
     Kind(ErrorKind),
     KindPlus(ErrorKind, String),
     Context(String),
+    Or,
 }
 
 impl PathPartKind {
@@ -45,6 +46,7 @@ impl PathPartKind {
                 format!("{}: {}", kind.description(), message)
             }
             PathPartKind::Context(string) => { string.clone() }
+            PathPartKind::Or => { String::from("Or") }
         }
     }
 }
@@ -145,38 +147,35 @@ type Lines = BTreeMap<u32, String>;
 
 pub struct PError {
     lines: Lines,
-    paths: Vec<PathNode>,
+    node: PathNode,
 }
 
 impl PError {
-    fn new(lines: Lines, paths: Vec<PathNode>) -> Self { PError { lines, paths } }
-    fn from_single(i_line: u32, line: String, node: PathNode) -> Self {
+    fn new(lines: Lines, node: PathNode) -> Self { PError { lines, node } }
+    fn from_node(i_line: u32, line: String, node: PathNode) -> Self {
         let mut lines = Lines::new();
         lines.insert(i_line, line);
-        let paths = vec!(node);
-        Self::new(lines, paths)
+        Self::new(lines, node)
     }
     fn from_path_kind(input: Span, kind: PathPartKind) -> Self {
         let line = get_line(input);
         let pos = Pos::from(input);
         let i_line = pos.i_line;
-        let path = PathNode::new_leaf(kind, pos);
-        PError::from_single(i_line, line, path)
+        let node = PathNode::new_leaf(kind, pos);
+        PError::from_node(i_line, line, node)
     }
     fn append_node(input: Span, kind: PathPartKind, other: Self) -> Self {
-        let PError { lines: mut other_lines, paths: other_paths } = other;
+        let PError { lines: mut other_lines, node: other_paths } = other;
         let pos = Pos::from(input);
         let i_line = pos.i_line;
         other_lines.entry(i_line).or_insert_with(|| { get_line(input) });
         let lines = other_lines;
-        let paths = vec!(PathNode::new(kind, pos, other_paths));
-        PError::new(lines, paths)
+        let node = PathNode::new(kind, pos, vec!(other_paths));
+        PError::new(lines, node)
     }
     fn get_labels(&self) -> LabelsByLine {
         let mut labels = LabelsByLine::new();
-        for path in &self.paths {
-            labels.append(path.get_labels())
-        }
+        labels.append(self.node.get_labels());
         labels
     }
     fn fits_in(label: &Label, labels: &[Label]) -> bool {
@@ -199,6 +198,8 @@ impl PError {
         }
         lines
     }
+    const HAVE_PREFIX: &'static str = "Have: ";
+    const NEED_PREFIX: &'static str = "Need: ";
     fn labels_to_line(labels: Vec<Label>) -> String {
         let mut labels = labels;
         labels.sort_by_key(|label| { label.i_col });
@@ -209,6 +210,7 @@ impl PError {
             }
             line.push_str(&label.display_string())
         }
+        line = format!("{}{}", PError::NEED_PREFIX, line);
         line
     }
     fn create_line_report(line: &str, labels: Vec<Label>) -> String {
@@ -217,7 +219,7 @@ impl PError {
                 .into_iter()
                 .map(PError::labels_to_line)
                 .collect();
-        let mut lines = vec!(String::from(line));
+        let mut lines = vec!(format!("{}{}", PError::HAVE_PREFIX, line));
         lines.append(&mut label_lines);
         lines.join("\n")
     }
@@ -254,15 +256,21 @@ impl<'a> ParseError<Span<'a>> for PError {
     }
 
     fn or(self, other: Self) -> Self {
-        let PError { lines: mut lines_self, paths: mut paths_self } = self;
-        let PError { lines: lines_other, paths: mut paths_other } = other;
+        let PError { lines: mut lines_self, node: mut node_self } = self;
+        let PError { lines: lines_other, node: node_other } = other;
         for (i_line, line) in lines_other {
             lines_self.insert(i_line, line);
         }
         let lines = lines_self;
-        paths_self.append(&mut paths_other);
-        let paths = paths_self;
-        PError::new(lines, paths)
+        let node =
+            if let PathPartKind::Or = node_self.kind {
+                node_self.children.push(node_other);
+                node_self
+            } else {
+                PathNode::new(PathPartKind::Or, node_self.pos,
+                              vec![node_self, node_other])
+            };
+        PError::new(lines, node)
     }
 }
 

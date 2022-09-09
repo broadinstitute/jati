@@ -1,5 +1,6 @@
 use nom::bytes::complete::tag;
-use nom::combinator::{all_consuming, map};
+use nom::combinator::{all_consuming, value};
+use nom::error::context;
 use crate::parse::{SParser, PResult, Span};
 
 mod error;
@@ -17,7 +18,7 @@ pub struct FirstParser {}
 
 impl SParser<()> for FirstParser {
     fn parse_span<'a>(&self, span: Span<'a>) -> PResult<'a, ()> {
-        map(all_consuming(tag("Hello")), |_| {})(span)
+        context("Hello", value((), all_consuming(tag("Hello"))))(span)
     }
 }
 

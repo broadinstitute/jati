@@ -1,5 +1,5 @@
 use jati::{FirstParser, parse_string};
-use jati::parse::{PResult, SParser};
+use jati::parse::PResult;
 
 fn print_error<T>(result: PResult<T>) -> PResult<T> {
     if let Err(error) = &result {
