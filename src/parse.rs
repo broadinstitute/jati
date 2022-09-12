@@ -1,4 +1,5 @@
 pub(crate) mod error;
+pub(crate) mod parsers;
 
 use nom::IResult;
 use nom_locate::LocatedSpan;
@@ -12,5 +13,8 @@ pub trait SParser<T> {
     fn parse_str<'a>(&self, string: &'a str) -> PResult<'a, T> {
         let span = Span::new(string);
         self.parse_span(span)
+    }
+    fn as_fn(&self) -> Box<dyn Fn(Span) -> PResult<T> + '_> {
+        Box::new(move |span| { self.parse_span(span) })
     }
 }

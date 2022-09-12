@@ -10,5 +10,5 @@ impl Op {
 }
 
 pub trait Composite {
-    fn children(&self) -> Vec<Tree>;
+    fn children(&self) -> dyn Iterator<Item=Tree>;
 }
