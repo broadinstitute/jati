@@ -3,7 +3,7 @@ use jati::parse_string;
 use jati::parse::parsers::id::RustIdParser;
 use jati::parse::PResult;
 use jati::parse::parsers::script::ScriptParser;
-use jati::parse::parsers::white::RustWhiteSpaceParser;
+use jati::parse::parsers::white::DefaultWhiteSpaceParser;
 
 fn print_error<T>(result: PResult<T>) -> PResult<T> {
     if let Err(error) = &result {
@@ -13,7 +13,7 @@ fn print_error<T>(result: PResult<T>) -> PResult<T> {
 }
 
 fn script_parser() -> ScriptParser {
-    let ws_parser = Rc::new(RustWhiteSpaceParser::new());
+    let ws_parser = Rc::new(DefaultWhiteSpaceParser::new());
     let id_parser = Rc::new(RustIdParser::new());
     ScriptParser::new(ws_parser, id_parser)
 }

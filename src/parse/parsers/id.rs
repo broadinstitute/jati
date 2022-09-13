@@ -30,4 +30,8 @@ impl SParser<Id> for RustIdParser {
     }
 }
 
+impl Default for RustIdParser {
+    fn default() -> Self { Self::new() }
+}
+
 impl IdParser for RustIdParser {}

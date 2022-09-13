@@ -5,7 +5,7 @@ use crate::trees::typed::call::Call;
 use crate::trees::typed::var_ref::VarRef;
 use crate::trees::types::Type;
 
-pub(crate) enum Tree<V: Var, F: Fun> {
+pub enum Tree<V: Var, F: Fun> {
     Call(Call<V, F>),
     Var(VarRef<V>),
     Lit(Literal)

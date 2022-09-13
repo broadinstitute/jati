@@ -9,13 +9,13 @@ use nom::sequence::tuple;
 
 pub trait WhiteSpaceParser: SParser<()> {}
 
-pub struct RustWhiteSpaceParser {}
+pub struct DefaultWhiteSpaceParser {}
 
-impl RustWhiteSpaceParser {
-    pub fn new() -> RustWhiteSpaceParser { RustWhiteSpaceParser {} }
+impl DefaultWhiteSpaceParser {
+    pub fn new() -> DefaultWhiteSpaceParser { DefaultWhiteSpaceParser {} }
 }
 
-impl SParser<()> for RustWhiteSpaceParser {
+impl SParser<()> for DefaultWhiteSpaceParser {
     fn parse_span<'a>(&self, span: Span<'a>) -> PResult<'a, ()> {
         let space = value((), is_a(" \t\n\r"));
         let slash_slash_comment =
@@ -30,4 +30,8 @@ impl SParser<()> for RustWhiteSpaceParser {
     }
 }
 
-impl WhiteSpaceParser for RustWhiteSpaceParser {}
+impl Default for DefaultWhiteSpaceParser {
+    fn default() -> Self { Self::new() }
+}
+
+impl WhiteSpaceParser for DefaultWhiteSpaceParser {}
