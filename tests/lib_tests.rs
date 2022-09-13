@@ -1,5 +1,9 @@
-use jati::{FirstParser, parse_string};
+use std::rc::Rc;
+use jati::parse_string;
+use jati::parse::parsers::id::RustIdParser;
 use jati::parse::PResult;
+use jati::parse::parsers::script::ScriptParser;
+use jati::parse::parsers::white::RustWhiteSpaceParser;
 
 fn print_error<T>(result: PResult<T>) -> PResult<T> {
     if let Err(error) = &result {
@@ -8,27 +12,17 @@ fn print_error<T>(result: PResult<T>) -> PResult<T> {
     result
 }
 
-#[test]
-fn hello() {
-    let first_parser = FirstParser::new();
-    assert!(print_error(parse_string(first_parser, "Hello")).is_ok());
+fn script_parser() -> ScriptParser {
+    let ws_parser = Rc::new(RustWhiteSpaceParser::new());
+    let id_parser = Rc::new(RustIdParser::new());
+    ScriptParser::new(ws_parser, id_parser)
 }
 
 #[test]
-fn hello_world() {
-    let first_parser = FirstParser::new();
-    assert!(print_error(parse_string(first_parser, "Hello, world!")).is_err());
-}
-
-#[test]
-fn hi() {
-    let first_parser = FirstParser::new();
-    assert!(print_error(parse_string(first_parser, "Hi")).is_err());
-}
-
-#[test]
-fn good() {
-    let first_parser = FirstParser::new();
-    assert!(print_error(parse_string(first_parser, "Good day")).is_err());
+fn script1() {
+    let script_parser = script_parser();
+    const SCRIPT: &'static str = "do_stuff();";
+    let result = parse_string(script_parser, SCRIPT);
+    assert!(print_error(result).is_ok());
 }
 

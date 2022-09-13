@@ -9,7 +9,11 @@ use nom::sequence::tuple;
 
 pub trait WhiteSpaceParser: SParser<()> {}
 
-struct RustWhiteSpaceParser {}
+pub struct RustWhiteSpaceParser {}
+
+impl RustWhiteSpaceParser {
+    pub fn new() -> RustWhiteSpaceParser { RustWhiteSpaceParser {} }
+}
 
 impl SParser<()> for RustWhiteSpaceParser {
     fn parse_span<'a>(&self, span: Span<'a>) -> PResult<'a, ()> {

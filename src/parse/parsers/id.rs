@@ -5,13 +5,17 @@ use nom::combinator::{map, recognize};
 use nom::error::context;
 use nom::multi::many0_count;
 use nom::sequence::pair;
-use crate::grammar::trees::id::Id;
+use crate::trees::raw::id::Id;
 use crate::{PResult, Span, SParser};
 use crate::parse::error::PError;
 
 pub trait IdParser: SParser<Id> {}
 
 pub struct RustIdParser {}
+
+impl RustIdParser {
+    pub fn new() -> RustIdParser { RustIdParser {} }
+}
 
 impl SParser<Id> for RustIdParser {
     fn parse_span<'a>(&self, span: Span<'a>) -> PResult<'a, Id> {

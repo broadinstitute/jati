@@ -1,5 +1,5 @@
 pub(crate) mod error;
-pub(crate) mod parsers;
+pub mod parsers;
 
 use nom::IResult;
 use nom_locate::LocatedSpan;
