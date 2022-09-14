@@ -4,8 +4,8 @@ use crate::trees::typed::tree::Tree;
 
 pub struct Call<V: Var, F: Fun> {
     pub name: String,
-    pub(crate) fun: F,
-    pub(crate) args: Vec<Tree<V, F>>
+    pub fun: F,
+    pub args: Vec<Tree<V, F>>
 }
 
 

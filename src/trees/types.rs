@@ -1,6 +1,9 @@
+#[derive(Copy, Clone, Eq, PartialEq)]
 pub enum Type {
     String,
     Float,
     Int,
-    Bool
+    Bool,
+    Unit,
+    Never
 }

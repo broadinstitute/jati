@@ -7,3 +7,14 @@ pub trait Symbols<V: Var, F: Fun> {
     fn get_var(&mut self, name: &str) -> Result<V, Error>;
     fn get_fun(&mut self, name: &str, args: Vec<Type>) -> Result<F, Error>;
 }
+
+pub mod errors {
+    use crate::error::Error;
+
+    pub fn no_such_var(name: &str) -> Error {
+        Error::new_symbols_error(format!("Unknown variable {}.", name))
+    }
+    pub fn no_such_fun(name: &str) -> Error {
+        Error::new_symbols_error(format!("Unknown function {}.", name))
+    }
+}

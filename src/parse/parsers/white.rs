@@ -21,7 +21,7 @@ impl SParser<()> for DefaultWhiteSpaceParser {
         let slash_slash_comment =
             value((), tuple((tag("//"), is_not("\n\r"), line_ending)));
         let hash_comment =
-            value((), tuple((tag("//"), is_not("\n\r"), line_ending)));
+            value((), tuple((tag("#"), is_not("\n\r"), line_ending)));
         let block_comment =
             value((), tuple((tag("/*"), take_until("*/"), tag("*/"))));
         context("ws",

@@ -4,10 +4,10 @@ use crate::parse::parsers::id::IdParser;
 use crate::parse::parsers::white::WhiteSpaceParser;
 use crate::trees::raw::tree::Tree;
 
-mod error;
+pub mod error;
 pub mod parse;
 pub mod trees;
-mod engine;
+pub mod engine;
 
 pub fn parse_string<T, P>(parser: P, string: &str) -> PResult<T>
     where P: SParser<T>

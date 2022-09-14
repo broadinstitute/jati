@@ -3,25 +3,32 @@ use crate::parse::error::PError;
 
 #[derive(Copy, Clone, Eq, PartialEq)]
 pub(crate) enum ErrorKind {
-    Parse
+    Parse,
+    Symbols
 }
+
 #[derive(Clone, Eq, PartialEq)]
 pub struct Error {
     kind: ErrorKind,
-    message: String
+    message: String,
 }
 
 impl Error {
     fn new(kind: ErrorKind, message: String) -> Error {
         Error { kind, message }
     }
+    pub(crate) fn new_parse_error(message: String) -> Error {
+        Error::new(ErrorKind::Parse, message)
+    }
+    pub(crate) fn new_symbols_error(message: String) -> Error {
+        Error::new(ErrorKind::Symbols, message)
+    }
 }
 
 impl From<PError> for Error {
     fn from(p_error: PError) -> Self {
         let message = p_error.create_report();
-        let kind = ErrorKind::Parse;
-        Error::new(kind, message)
+        Error::new_parse_error(message)
     }
 }
 
@@ -35,6 +42,4 @@ impl Display for Error {
     }
 }
 
-impl std::error::Error for Error {
-
-}
+impl std::error::Error for Error {}
