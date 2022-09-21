@@ -1,6 +1,5 @@
 use jati::parse_string;
 use jati::parse::parsers::id::RustIdParser;
-use jati::parse::PResult;
 use jati::parse::parsers::script::ScriptParser;
 use jati::parse::parsers::white::DefaultWhiteSpaceParser;
 use jati::trees::symbols::Symbols;
@@ -11,7 +10,7 @@ use jati::trees::symbols::errors::{no_such_fun, no_such_var};
 use jati::trees::types::Type;
 use jati::trees::typed::tree::Tree as TypedTree;
 
-fn print_error<T>(result: PResult<T>) -> PResult<T> {
+fn print_error<T>(result: Result<T, Error>) -> Result<T, Error> {
     if let Err(error) = &result {
         println!("{}", error)
     }
@@ -70,7 +69,7 @@ fn script1() {
     let script_parser = script_parser();
     const SCRIPT: &str = "do_stuff();";
     let parse_result = parse_string(script_parser, SCRIPT);
-    if let Ok((_, raw_tree)) = parse_result {
+    if let Ok(raw_tree) = parse_result {
         let mut symbols = MockSymbols::new();
         let typed_tree = raw_tree.into_typed(&mut symbols).unwrap();
         if let TypedTree::Call(call) = typed_tree {
