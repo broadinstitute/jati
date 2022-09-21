@@ -1,4 +1,3 @@
-use std::rc::Rc;
 use jati::parse_string;
 use jati::parse::parsers::id::RustIdParser;
 use jati::parse::PResult;
@@ -20,8 +19,8 @@ fn print_error<T>(result: PResult<T>) -> PResult<T> {
 }
 
 fn script_parser() -> ScriptParser {
-    let ws_parser = Rc::new(DefaultWhiteSpaceParser::new());
-    let id_parser = Rc::new(RustIdParser::new());
+    let ws_parser = DefaultWhiteSpaceParser::new();
+    let id_parser = RustIdParser::new();
     ScriptParser::new(ws_parser, id_parser)
 }
 

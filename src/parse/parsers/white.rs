@@ -1,3 +1,4 @@
+use std::rc::Rc;
 use nom::branch::alt;
 use nom::bytes::complete::{tag, is_not, is_a, take_until};
 use nom::character::complete::line_ending;
@@ -12,7 +13,8 @@ pub trait WhiteSpaceParser: SParser<()> {}
 pub struct DefaultWhiteSpaceParser {}
 
 impl DefaultWhiteSpaceParser {
-    pub fn new() -> DefaultWhiteSpaceParser { DefaultWhiteSpaceParser {} }
+    pub fn new_unboxed() -> DefaultWhiteSpaceParser { DefaultWhiteSpaceParser {} }
+    pub fn new() -> Rc<DefaultWhiteSpaceParser> { Rc::new(Self::new_unboxed()) }
 }
 
 impl SParser<()> for DefaultWhiteSpaceParser {
@@ -31,7 +33,8 @@ impl SParser<()> for DefaultWhiteSpaceParser {
 }
 
 impl Default for DefaultWhiteSpaceParser {
-    fn default() -> Self { Self::new() }
+    fn default() -> Self { Self::new_unboxed() }
 }
 
 impl WhiteSpaceParser for DefaultWhiteSpaceParser {}
+

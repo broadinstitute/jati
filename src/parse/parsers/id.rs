@@ -1,3 +1,4 @@
+use std::rc::Rc;
 use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::character::complete::{alpha1, alphanumeric1};
@@ -14,7 +15,8 @@ pub trait IdParser: SParser<Id> {}
 pub struct RustIdParser {}
 
 impl RustIdParser {
-    pub fn new() -> RustIdParser { RustIdParser {} }
+    pub fn new_unboxed() -> RustIdParser { RustIdParser {} }
+    pub fn new() -> Rc<RustIdParser> { Rc::new(Self::new_unboxed()) }
 }
 
 impl SParser<Id> for RustIdParser {
@@ -31,7 +33,7 @@ impl SParser<Id> for RustIdParser {
 }
 
 impl Default for RustIdParser {
-    fn default() -> Self { Self::new() }
+    fn default() -> Self { Self::new_unboxed() }
 }
 
 impl IdParser for RustIdParser {}
