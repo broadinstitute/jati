@@ -17,4 +17,8 @@ pub mod errors {
     pub fn no_such_fun(name: &str) -> Error {
         Error::new_symbols_error(format!("Unknown function {}.", name))
     }
+    pub fn wrong_number_of_args(name: &str, n_actual: usize, n_expected: usize) -> Error {
+        Error::new_symbols_error(format!("Function {} needs {} args, but found {}.",
+                                         name, n_expected, n_actual))
+    }
 }
