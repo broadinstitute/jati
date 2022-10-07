@@ -1,5 +1,6 @@
 use std::fmt::{Debug, Display, Formatter};
 use crate::parse::error::PError;
+use crate::trees::symbols::SymbolError;
 
 #[derive(Copy, Clone, Eq, PartialEq)]
 pub(crate) enum ErrorKind {
@@ -20,15 +21,18 @@ impl Error {
     pub(crate) fn new_parse_error(message: String) -> Error {
         Error::new(ErrorKind::Parse, message)
     }
-    pub(crate) fn new_symbols_error(message: String) -> Error {
-        Error::new(ErrorKind::Symbols, message)
-    }
 }
 
 impl From<PError> for Error {
     fn from(p_error: PError) -> Self {
         let message = p_error.create_report();
         Error::new_parse_error(message)
+    }
+}
+
+impl From<SymbolError> for Error {
+    fn from(symbol_error: SymbolError) -> Self {
+        Error::new(ErrorKind::Symbols, symbol_error.message() )
     }
 }
 

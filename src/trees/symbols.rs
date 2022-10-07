@@ -1,24 +1,48 @@
 use crate::engine::fun::Fun;
 use crate::engine::var::Var;
-use crate::error::Error;
 use crate::trees::types::Type;
 
 pub trait Symbols<V: Var, F: Fun> {
-    fn get_var(&mut self, name: &str) -> Result<V, Error>;
-    fn get_fun(&mut self, name: &str, args: Vec<Type>) -> Result<F, Error>;
+    fn get_var(&mut self, name: &str) -> Result<V, SymbolError>;
+    fn get_fun(&mut self, name: &str, args: Vec<Type>) -> Result<F, SymbolError>;
 }
 
-pub mod errors {
-    use crate::error::Error;
+pub enum SymbolError {
+    NoSuchVar(String),
+    NoSuchFun(String),
+    Args(ArgsError),
+}
 
-    pub fn no_such_var(name: &str) -> Error {
-        Error::new_symbols_error(format!("Unknown variable {}.", name))
+impl SymbolError {
+    pub fn no_such_var(name: &str) -> SymbolError { SymbolError::NoSuchVar(String::from(name)) }
+    pub fn no_such_fun(name: &str) -> SymbolError { SymbolError::NoSuchFun(String::from(name)) }
+    pub fn wrong_number_of_args(name: &str, actual: usize, expected: usize) -> SymbolError {
+        let fun_name = String::from(name);
+        let args_failure = ArgsFailure::WrongNumber { actual, expected };
+        SymbolError::Args(ArgsError { fun_name, args_failure })
     }
-    pub fn no_such_fun(name: &str) -> Error {
-        Error::new_symbols_error(format!("Unknown function {}.", name))
+    pub fn message(&self) -> String {
+        match self {
+            SymbolError::NoSuchVar(name) => { format!("Unknown variable {}.", name) }
+            SymbolError::NoSuchFun(name) => { format!("Unknown function {}.", name) }
+            SymbolError::Args(args_error) => {
+                let ArgsError { fun_name, args_failure } = args_error;
+                match args_failure {
+                    ArgsFailure::WrongNumber { actual, expected } => {
+                        format!("Function {} needs {} args, but found {}.", fun_name, expected,
+                                actual)
+                    }
+                }
+            }
+        }
     }
-    pub fn wrong_number_of_args(name: &str, n_actual: usize, n_expected: usize) -> Error {
-        Error::new_symbols_error(format!("Function {} needs {} args, but found {}.",
-                                         name, n_expected, n_actual))
-    }
+}
+
+pub struct ArgsError {
+    fun_name: String,
+    args_failure: ArgsFailure,
+}
+
+enum ArgsFailure {
+    WrongNumber { actual: usize, expected: usize }
 }
