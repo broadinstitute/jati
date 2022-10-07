@@ -16,6 +16,11 @@ pub enum SymbolError {
 impl SymbolError {
     pub fn no_such_var(name: &str) -> SymbolError { SymbolError::NoSuchVar(String::from(name)) }
     pub fn no_such_fun(name: &str) -> SymbolError { SymbolError::NoSuchFun(String::from(name)) }
+    pub fn args_issue(name: &str, args_failure: ArgsFailure) -> SymbolError {
+        let fun_name = String::from(name);
+        let args_error = ArgsError { fun_name, args_failure };
+        SymbolError::Args(args_error)
+    }
     pub fn wrong_number_of_args(name: &str, actual: usize, expected: usize) -> SymbolError {
         let fun_name = String::from(name);
         let args_failure = ArgsFailure::WrongNumber { actual, expected };
