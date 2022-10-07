@@ -43,6 +43,12 @@ pub struct ArgsError {
     args_failure: ArgsFailure,
 }
 
-enum ArgsFailure {
+pub enum ArgsFailure {
     WrongNumber { actual: usize, expected: usize }
+}
+
+impl ArgsFailure {
+    pub fn new_wrong_number(actual: usize, expected: usize) -> ArgsFailure {
+        ArgsFailure::WrongNumber { actual, expected}
+    }
 }
