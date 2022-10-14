@@ -1,5 +1,5 @@
-use crate::engine::fun::Fun;
-use crate::engine::var::Var;
+use crate::runtime::fun::Fun;
+use crate::runtime::var::Var;
 use crate::trees::lit::Literal;
 use crate::trees::typed::call::Call;
 use crate::trees::typed::var_ref::VarRef;

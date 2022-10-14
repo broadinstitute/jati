@@ -1,5 +1,5 @@
-use crate::engine::fun::Fun;
-use crate::engine::var::Var;
+use crate::runtime::fun::Fun;
+use crate::runtime::var::Var;
 use crate::trees::types::Type;
 
 pub trait Symbols<V: Var, F: Fun> {
@@ -20,11 +20,6 @@ impl SymbolError {
         let fun_name = String::from(name);
         let args_error = ArgsError { fun_name, args_failure };
         SymbolError::Args(args_error)
-    }
-    pub fn wrong_number_of_args(name: &str, actual: usize, expected: usize) -> SymbolError {
-        let fun_name = String::from(name);
-        let args_failure = ArgsFailure::WrongNumber { actual, expected };
-        SymbolError::Args(ArgsError { fun_name, args_failure })
     }
     pub fn message(&self) -> String {
         match self {
