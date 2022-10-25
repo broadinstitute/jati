@@ -49,6 +49,15 @@ impl PathPartKind {
             PathPartKind::Or => { String::from("Or") }
         }
     }
+    fn priority(&self) -> u8 {
+        match self {
+            PathPartKind::Char(_) => { 1 }
+            PathPartKind::Kind(_) => { 2 }
+            PathPartKind::KindPlus(_, _) => { 3 }
+            PathPartKind::Context(_) => { 4 }
+            PathPartKind::Or => { 0 }
+        }
+    }
 }
 
 impl From<ErrorKind> for PathPartKind {
@@ -133,6 +142,25 @@ impl PathNode {
         let description = self.kind.get_string();
         Label::new(i_col, description)
     }
+    fn pruned(self) -> PathNode {
+        let PathNode { kind, pos, children } = self;
+        let children_pruned: Vec<PathNode> =
+            children.into_iter().map(|child| { child.pruned() }).collect();
+        if children_pruned.len() > 1 {
+            PathNode { kind, pos, children: children_pruned }
+        } else {
+            match children_pruned.into_iter().next() {
+                None => { PathNode { kind, pos, children: Vec::new() } }
+                Some(child) => {
+                    if pos == child.pos && child.kind.priority() >= kind.priority() {
+                        child
+                    } else {
+                        PathNode { kind, pos, children: vec!(child) }
+                    }
+                }
+            }
+        }
+    }
     fn get_labels(&self) -> LabelsByLine {
         let mut labels = LabelsByLine::new();
         for child in &self.children {
@@ -155,14 +183,14 @@ impl PError {
     fn from_node(i_line: u32, line: String, node: PathNode) -> Self {
         let mut lines = Lines::new();
         lines.insert(i_line, line);
-        Self::new(lines, node)
+        Self::new(lines, node.pruned())
     }
     fn from_path_kind(input: Span, kind: PathPartKind) -> Self {
         let line = get_line(input);
         let pos = Pos::from(input);
         let i_line = pos.i_line;
         let node = PathNode::new_leaf(kind, pos);
-        PError::from_node(i_line, line, node)
+        PError::from_node(i_line, line, node.pruned())
     }
     fn append_node(input: Span, kind: PathPartKind, other: Self) -> Self {
         let PError { lines: mut other_lines, node: other_paths } = other;
@@ -171,7 +199,7 @@ impl PError {
         other_lines.entry(i_line).or_insert_with(|| { get_line(input) });
         let lines = other_lines;
         let node = PathNode::new(kind, pos, vec!(other_paths));
-        PError::new(lines, node)
+        PError::new(lines, node.pruned())
     }
     fn get_labels(&self) -> LabelsByLine {
         let mut labels = LabelsByLine::new();
@@ -270,7 +298,7 @@ impl<'a> ParseError<Span<'a>> for PError {
                 PathNode::new(PathPartKind::Or, node_self.pos,
                               vec![node_self, node_other])
             };
-        PError::new(lines, node)
+        PError::new(lines, node.pruned())
     }
 }
 

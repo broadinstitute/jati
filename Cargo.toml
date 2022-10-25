@@ -1,6 +1,6 @@
 [package]
 name = "jati"
-description = "A user-friendly parser library"
+description = "DSL support library based on nom."
 version = "0.0.1"
 authors = ["Oliver Ruebenacker <oliverr@broadinstitute.org>"]
 edition = "2021"
