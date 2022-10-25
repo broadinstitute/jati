@@ -155,7 +155,7 @@ impl PathNode {
                     if pos == child.pos && child.kind.priority() >= kind.priority() {
                         child
                     } else {
-                        PathNode { kind, pos, children: vec!(child) }
+                        PathNode { kind, pos, children: child.children }
                     }
                 }
             }
