@@ -1,7 +1,7 @@
 use crate::runtime::fun::Fun;
 use crate::runtime::var::Var;
 use crate::error::Error;
-use crate::trees::lit::Literal;
+use crate::trees::literal::Literal;
 use crate::trees::raw::call::Call;
 use crate::trees::raw::id::Id;
 use crate::trees::symbols::Symbols;

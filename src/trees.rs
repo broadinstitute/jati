@@ -1,5 +1,5 @@
 pub(crate) mod raw;
-pub mod lit;
+pub mod literal;
 pub mod typed;
 mod typer;
 pub mod symbols;
