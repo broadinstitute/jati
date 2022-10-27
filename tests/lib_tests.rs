@@ -7,7 +7,7 @@ use jati::runtime::var::Var;
 use jati::runtime::fun::Fun;
 use jati::error::Error;
 use jati::trees::types::Type;
-use jati::trees::typed::tree::Tree as TypedTree;
+use jati::trees::typed::tree_old::TreeOld as TypedTree;
 
 fn print_error<T>(result: Result<T, Error>) -> Result<T, Error> {
     if let Err(error) = &result {

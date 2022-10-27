@@ -2,7 +2,7 @@ use std::rc::Rc;
 use nom::combinator::{all_consuming, map};
 use nom::error::context;
 use nom::sequence::delimited;
-use crate::{CallParser, DefaultCallParser, IdParser, PResult, Span, SParser, Tree, WhiteSpaceParser};
+use crate::{CallParser, DefaultCallParser, IdParser, PResult, Span, SParser, TreeOld, WhiteSpaceParser};
 
 pub struct ScriptParser {
     ws_parser: Rc<dyn WhiteSpaceParser>,
@@ -17,8 +17,8 @@ impl ScriptParser {
     }
 }
 
-impl SParser<Tree> for ScriptParser {
-    fn parse_span<'a>(&self, span: Span<'a>) -> PResult<'a, Tree> {
+impl SParser<TreeOld> for ScriptParser {
+    fn parse_span<'a>(&self, span: Span<'a>) -> PResult<'a, TreeOld> {
         context("script",
                 map(
                     all_consuming(
@@ -27,7 +27,7 @@ impl SParser<Tree> for ScriptParser {
                             self.ws_parser.as_fn(),
                         )
                     ),
-                    |call| { Tree::Call(call) }),
+                    |call| { TreeOld::Call(call) }),
         )(span)
     }
 }

@@ -4,7 +4,7 @@ use crate::parse::{PResult, Span, SParser};
 use crate::parse::parsers::call::{CallParser, DefaultCallParser};
 use crate::parse::parsers::id::IdParser;
 use crate::parse::parsers::white::WhiteSpaceParser;
-use crate::trees::raw::tree::Tree;
+use crate::trees::raw::tree_old::TreeOld;
 
 pub mod error;
 pub mod parse;
