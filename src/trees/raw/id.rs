@@ -14,7 +14,7 @@ impl Id {
 }
 
 impl RawTree for Id {
-    fn into_typed<V, F, S>(self, symbols: &mut S) -> Result<Box<dyn TypedTree<V, F>>, Error>
+    fn into_typed<V, F, S>(self, symbols: &mut S) -> Result<Box<dyn TypedTree>, Error>
         where V: Var, F: Fun, S: Symbols<V, F> {
         todo!()
     }

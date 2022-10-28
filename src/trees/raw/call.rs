@@ -18,11 +18,11 @@ impl Call {
 }
 
 impl RawTree for Call {
-    fn into_typed<V, F, S>(self, symbols: &mut S) -> Result<Box<dyn TypedTree<V, F>>, Error>
+    fn into_typed<V, F, S>(self, symbols: &mut S) -> Result<Box<dyn TypedTree>, Error>
         where V: Var, F: Fun, S: Symbols<V, F> {
         let Call { callee, args: args_raw } = self;
         let name = callee.string;
-        let mut args_typed: Vec<Box<dyn TypedTree<V, F>>> = Vec::new();
+        let mut args_typed: Vec<Box<dyn TypedTree>> = Vec::new();
         let mut arg_types: Vec<Type> = Vec::new();
         for arg_raw in args_raw {
             let arg = arg_raw.into_typed(symbols)?;
