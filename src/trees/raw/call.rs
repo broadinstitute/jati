@@ -1,7 +1,6 @@
 use crate::Error;
-use crate::runtime::fun::Fun;
-use crate::runtime::var::Var;
-use crate::trees::raw::id::Id;
+use crate::symbols::id::Id;
+use crate::symbols::symbol_table::SymbolTable;
 use crate::trees::raw::tree::Tree as RawTree;
 use crate::trees::symbols::Symbols;
 use crate::trees::typed::call::Call as TypedCall;
@@ -18,8 +17,7 @@ impl Call {
 }
 
 impl RawTree for Call {
-    fn into_typed<V, F, S>(self, symbols: &mut S) -> Result<Box<dyn TypedTree>, Error>
-        where V: Var, F: Fun, S: Symbols<V, F> {
+    fn into_typed(self, symbols: &mut SymbolTable) -> Result<Box<dyn TypedTree>, Error> {
         let Call { callee, args: args_raw } = self;
         let name = callee.string;
         let mut args_typed: Vec<Box<dyn TypedTree>> = Vec::new();

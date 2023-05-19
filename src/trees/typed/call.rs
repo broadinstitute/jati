@@ -1,11 +1,10 @@
-use crate::runtime::fun::Fun;
-use crate::runtime::var::Var;
-use crate::trees::typed::tree_old::TreeOld;
+use crate::symbols::fun::FunTag;
+use crate::trees::typed::tree::Tree;
 
-pub struct Call<V: Var, F: Fun> {
-    pub name: String,
-    pub fun: F,
-    pub args: Vec<TreeOld<V, F>>
+pub struct Call {
+    pub name: String,  // TODO: replace name with id
+    pub fun: FunTag,
+    pub args: Vec<Box<dyn Tree>>
 }
 
 

@@ -1,10 +1,10 @@
-use crate::runtime::fun::Fun;
-use crate::runtime::var::Var;
+use crate::symbols::fun::FunTag;
+use crate::symbols::var::VarTag;
 use crate::trees::types::Type;
 
-pub trait Symbols<V: Var, F: Fun> {
-    fn get_var(&mut self, name: &str) -> Result<V, SymbolError>;
-    fn get_fun(&mut self, name: &str, args: Vec<Type>) -> Result<F, SymbolError>;
+pub trait Symbols {
+    fn get_var(&mut self, name: &str) -> Result<VarTag, SymbolError>;
+    fn get_fun(&mut self, name: &str, args: Vec<Type>) -> Result<FunTag, SymbolError>;
 }
 
 pub enum SymbolError {

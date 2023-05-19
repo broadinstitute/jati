@@ -5,9 +5,9 @@ use nom::error::context;
 use nom::sequence::{pair, tuple};
 use crate::trees::raw::call::Call;
 use crate::{PResult, Span, SParser};
-use crate::trees::raw::tree_old::TreeOld;
 use crate::parse::parsers::id::IdParser;
 use crate::parse::parsers::white::WhiteSpaceParser;
+use crate::trees::raw::tree::Tree;
 
 pub trait CallParser: SParser<Call> {}
 
@@ -34,7 +34,7 @@ impl SParser<Call> for DefaultCallParser {
                     )),
                     |tup| {
                         let callee = tup.0;
-                        let args: Vec<TreeOld> = Vec::new();
+                        let args: Vec<Tree> = Vec::new();
                         Call::new(callee, args)
                     },
                 ),

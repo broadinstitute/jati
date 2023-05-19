@@ -6,7 +6,7 @@ use nom::combinator::{map, recognize};
 use nom::error::context;
 use nom::multi::many0_count;
 use nom::sequence::pair;
-use crate::trees::raw::id::Id;
+use crate::symbols::id::Id;
 use crate::{PResult, Span, SParser};
 use crate::parse::error::PError;
 
