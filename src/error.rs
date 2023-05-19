@@ -2,37 +2,20 @@ use std::fmt::{Debug, Display, Formatter};
 use crate::parse::error::PError;
 use crate::trees::symbols::SymbolError;
 
-#[derive(Copy, Clone, Eq, PartialEq)]
-pub(crate) enum ErrorKind {
-    Parse,
-    Symbols
-}
-
-#[derive(Clone, Eq, PartialEq)]
-pub struct Error {
-    kind: ErrorKind,
-    message: String,
-}
-
-impl Error {
-    fn new(kind: ErrorKind, message: String) -> Error {
-        Error { kind, message }
-    }
-    pub(crate) fn new_parse_error(message: String) -> Error {
-        Error::new(ErrorKind::Parse, message)
-    }
+pub enum Error {
+    Parse(PError),
+    Symbol(SymbolError)
 }
 
 impl From<PError> for Error {
     fn from(p_error: PError) -> Self {
-        let message = p_error.create_report();
-        Error::new_parse_error(message)
+        Error::Parse(p_error)
     }
 }
 
 impl From<SymbolError> for Error {
     fn from(symbol_error: SymbolError) -> Self {
-        Error::new(ErrorKind::Symbols, symbol_error.message() )
+        Error::Symbol(symbol_error)
     }
 }
 
@@ -42,7 +25,10 @@ impl Debug for Error {
 
 impl Display for Error {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        writeln!(f, "{}", self.message)
+        match self {
+            Error::Parse(p_error) => { write!(f, "Parse error: {}", p_error)}
+            Error::Symbol(symbol_error) => { write!(f, "{}", symbol_error)}
+        }
     }
 }
 

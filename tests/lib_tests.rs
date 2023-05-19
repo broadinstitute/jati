@@ -1,13 +1,15 @@
+use std::sync::Arc;
+use jati::error::Error;
 use jati::parse_string;
 use jati::parse::parsers::id::RustIdParser;
 use jati::parse::parsers::script::ScriptParser;
 use jati::parse::parsers::white::DefaultWhiteSpaceParser;
-use jati::trees::symbols::{SymbolError, Symbols};
-use jati::symbols::var::Var;
-use jati::symbols::fun::Fun;
-use jati::error::Error;
+use jati::trees::symbols::{ArgsFailure, SymbolError};
+use jati::symbols::fun::{FunKey, FunSig, FunTag};
+use jati::symbols::id::Id;
+use jati::symbols::symbol_table::SymbolTable;
+use jati::symbols::var::VarTag;
 use jati::trees::types::Type;
-use jati::trees::typed::tree_old::TreeOld as TypedTree;
 
 fn print_error<T>(result: Result<T, Error>) -> Result<T, Error> {
     if let Err(error) = &result {
@@ -22,45 +24,49 @@ fn script_parser() -> ScriptParser {
     ScriptParser::new(ws_parser, id_parser)
 }
 
-struct MockVar {
-    tpe: Type,
+struct SimpleFunSig {}
+
+impl FunSig for SimpleFunSig {
+    fn tpe(&self) -> Type { Type::Unit }
+
+    fn check_arg_types(&self, arg_types: &[&Type]) -> Result<(), ArgsFailure> {
+        if arg_types.is_empty() {
+            Ok(())
+        } else {
+            Err(ArgsFailure::new_wrong_number(arg_types.len(), 0))?
+        }
+    }
 }
 
-impl Var for MockVar {
-    fn tpe(&self) -> Type { self.tpe }
+struct MockSymbols {
+    do_stuff_tag: FunTag,
 }
-
-struct MockFun {
-    name: String,
-    tpe: Type,
-}
-
-impl MockFun {
-    pub fn new(name: String, tpe: Type) -> MockFun { MockFun { name, tpe } }
-}
-
-impl Fun for MockFun {
-    fn tpe(&self) -> Type { self.tpe }
-}
-
-struct MockSymbols {}
 
 impl MockSymbols {
     pub fn new() -> MockSymbols {
-        MockSymbols {}
+        let key = FunKey::next();
+        let sig = Arc::new(SimpleFunSig {}) as Arc<dyn FunSig>;
+        let do_stuff_tag = FunTag { key, sig };
+        MockSymbols { do_stuff_tag }
     }
 }
 
-impl Symbols<MockVar, MockFun> for MockSymbols {
-    fn get_var(&mut self, name: &str) -> Result<MockVar, SymbolError> {
-        Err(SymbolError::no_such_var(name))
+impl SymbolTable for MockSymbols {
+    fn get_var(&mut self, _id: &Id) -> Result<Option<VarTag>, Error> {
+        Ok(None)
     }
 
-    fn get_fun(&mut self, name: &str, args: Vec<Type>) -> Result<MockFun, SymbolError> {
-        if name == "do_stuff" && args.is_empty() {
-            Ok(MockFun::new(String::from("do_stuff"), Type::Unit))
+    fn get_fun(&mut self, id: &Id, args: &[Type]) -> Result<Option<FunTag>, Error> {
+        if id.string == "do_stuff" {
+            if args.is_empty() {
+                Ok(Some(self.do_stuff_tag.clone()))
+            } else {
+                let args_failure =
+                    ArgsFailure::new_wrong_number(args.len(), 0);
+                Err(SymbolError::args_issue(id, args_failure))?
+            }
         } else {
-            Err(SymbolError::no_such_fun(name))
+            Ok(None)
         }
     }
 }
@@ -73,12 +79,7 @@ fn script1() {
     if let Ok(raw_tree) = parse_result {
         let mut symbols = MockSymbols::new();
         let typed_tree = raw_tree.into_typed(&mut symbols).unwrap();
-        if let TypedTree::Call(call) = typed_tree {
-            assert_eq!(call.name, "do_stuff");
-            assert_eq!(call.fun.name, "do_stuff")
-        } else {
-            panic!("Tree is not a call.")
-        }
+        assert_eq!(typed_tree.tpe(), Type::Unit);
     } else {
         assert!(print_error(parse_result).is_ok());
     }

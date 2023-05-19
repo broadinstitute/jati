@@ -1,24 +1,18 @@
-use crate::symbols::fun::FunTag;
-use crate::symbols::var::VarTag;
-use crate::trees::types::Type;
-
-pub trait Symbols {
-    fn get_var(&mut self, name: &str) -> Result<VarTag, SymbolError>;
-    fn get_fun(&mut self, name: &str, args: Vec<Type>) -> Result<FunTag, SymbolError>;
-}
+use std::fmt::{Display, Formatter};
+use crate::symbols::id::Id;
 
 pub enum SymbolError {
-    NoSuchVar(String),
-    NoSuchFun(String),
+    NoSuchVar(Id),
+    NoSuchFun(Id),
     Args(ArgsError),
 }
 
 impl SymbolError {
-    pub fn no_such_var(name: &str) -> SymbolError { SymbolError::NoSuchVar(String::from(name)) }
-    pub fn no_such_fun(name: &str) -> SymbolError { SymbolError::NoSuchFun(String::from(name)) }
-    pub fn args_issue(name: &str, args_failure: ArgsFailure) -> SymbolError {
-        let fun_name = String::from(name);
-        let args_error = ArgsError { fun_name, args_failure };
+    pub fn no_such_var(id: &Id) -> SymbolError { SymbolError::NoSuchVar(id.clone()) }
+    pub fn no_such_fun(id: &Id) -> SymbolError { SymbolError::NoSuchFun(id.clone()) }
+    pub fn args_issue(id: &Id, args_failure: ArgsFailure) -> SymbolError {
+        let fun_name = id.clone();
+        let args_error = ArgsError { fun_id: fun_name, args_failure };
         SymbolError::Args(args_error)
     }
     pub fn message(&self) -> String {
@@ -26,7 +20,7 @@ impl SymbolError {
             SymbolError::NoSuchVar(name) => { format!("Unknown variable {}.", name) }
             SymbolError::NoSuchFun(name) => { format!("Unknown function {}.", name) }
             SymbolError::Args(args_error) => {
-                let ArgsError { fun_name, args_failure } = args_error;
+                let ArgsError { fun_id: fun_name, args_failure } = args_error;
                 match args_failure {
                     ArgsFailure::WrongNumber { actual, expected } => {
                         format!("Function {} needs {} args, but found {}.", fun_name, expected,
@@ -38,8 +32,14 @@ impl SymbolError {
     }
 }
 
+impl Display for SymbolError {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.message())
+    }
+}
+
 pub struct ArgsError {
-    fun_name: String,
+    fun_id: Id,
     args_failure: ArgsFailure,
 }
 

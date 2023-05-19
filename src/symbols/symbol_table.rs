@@ -6,5 +6,5 @@ use crate::trees::types::Type;
 
 pub trait SymbolTable {
     fn get_var(&mut self, id: &Id) -> Result<Option<VarTag>, Error>;
-    fn get_fun(&mut self, id: &Id, args: &[&Type]) -> Result<FunTag, Error>;
+    fn get_fun(&mut self, id: &Id, args: &[Type]) -> Result<Option<FunTag>, Error>;
 }

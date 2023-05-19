@@ -34,7 +34,7 @@ impl SParser<Call> for DefaultCallParser {
                     )),
                     |tup| {
                         let callee = tup.0;
-                        let args: Vec<Tree> = Vec::new();
+                        let args: Vec<Box<dyn Tree>> = Vec::new();
                         Call::new(callee, args)
                     },
                 ),

@@ -18,8 +18,8 @@ impl ScriptParser {
     }
 }
 
-impl SParser<Tree> for ScriptParser {
-    fn parse_span<'a>(&self, span: Span<'a>) -> PResult<'a, Tree> {
+impl SParser<Box<dyn Tree>> for ScriptParser {
+    fn parse_span<'a>(&self, span: Span<'a>) -> PResult<'a, Box<dyn Tree>> {
         context("script",
                 map(
                     all_consuming(
@@ -28,7 +28,7 @@ impl SParser<Tree> for ScriptParser {
                             self.ws_parser.as_fn(),
                         )
                     ),
-                    |call| { Tree::Call(call) }),
+                    |call| { Box::new(call ) as Box<dyn Tree>}),
         )(span)
     }
 }

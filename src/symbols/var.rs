@@ -1,7 +1,8 @@
+use std::sync::Arc;
 use uuid::Uuid;
 use crate::trees::types::Type;
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Eq, PartialEq)]
 pub struct VarKey {
     uuid: Uuid
 }
@@ -11,6 +12,6 @@ pub trait VarSig {
 }
 
 pub struct VarTag {
-    key: VarKey,
-    pub(crate) sig: Box<dyn VarSig>
+    pub key: VarKey,
+    pub(crate) sig: Arc<dyn VarSig>
 }
