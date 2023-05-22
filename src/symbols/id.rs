@@ -1,23 +1,17 @@
 use std::fmt::{Display, Formatter};
+use std::sync::Arc;
 
-
+#[derive(Clone)]
 pub struct Id {
-    pub string: String,
+    pub string: Arc<String>,
 }
 
 impl Id {
-    pub fn new(name: String) -> Id { Id { string: name } }
+    pub fn new(name: String) -> Id { Id { string: Arc::new(name) } }
 }
 
 impl Display for Id {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.string)
-    }
-}
-
-impl Clone for Id {
-    fn clone(&self) -> Self {
-        let string = self.string.clone();
-        Id { string }
     }
 }

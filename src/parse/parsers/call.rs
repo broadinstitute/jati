@@ -8,8 +8,9 @@ use crate::{PResult, Span, SParser};
 use crate::parse::parsers::id::IdParser;
 use crate::parse::parsers::white::WhiteSpaceParser;
 use crate::trees::raw::tree::Tree;
+use crate::trees::raw::op::Op;
 
-pub trait CallParser: SParser<Call> {}
+pub trait CallParser: SParser<Tree> {}
 
 pub struct DefaultCallParser {
     pub(crate) ws: Rc<dyn WhiteSpaceParser>,
@@ -24,8 +25,8 @@ impl DefaultCallParser {
     pub fn id(&self) -> Rc<dyn IdParser> { self.id.clone() }
 }
 
-impl SParser<Call> for DefaultCallParser {
-    fn parse_span<'a>(&self, span: Span<'a>) -> PResult<'a, Call> {
+impl SParser<Tree> for DefaultCallParser {
+    fn parse_span<'a>(&self, span: Span<'a>) -> PResult<'a, Tree> {
         context("call",
                 map(
                     tuple((
@@ -33,9 +34,10 @@ impl SParser<Call> for DefaultCallParser {
                         opt(pair(self.ws.as_fn(), tag(";")))
                     )),
                     |tup| {
-                        let callee = tup.0;
-                        let args: Vec<Box<dyn Tree>> = Vec::new();
-                        Call::new(callee, args)
+                        let id = tup.0;
+                        let op = Call { id };
+                        let args: Vec<Tree> = Vec::new();
+                        op.new_tree(args).unwrap()
                     },
                 ),
         )(span)

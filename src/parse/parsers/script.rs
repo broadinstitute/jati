@@ -1,5 +1,5 @@
 use std::rc::Rc;
-use nom::combinator::{all_consuming, map};
+use nom::combinator::all_consuming;
 use nom::error::context;
 use nom::sequence::delimited;
 use crate::{CallParser, DefaultCallParser, IdParser, PResult, Span, SParser, WhiteSpaceParser};
@@ -18,17 +18,15 @@ impl ScriptParser {
     }
 }
 
-impl SParser<Box<dyn Tree>> for ScriptParser {
-    fn parse_span<'a>(&self, span: Span<'a>) -> PResult<'a, Box<dyn Tree>> {
+impl SParser<Tree> for ScriptParser {
+    fn parse_span<'a>(&self, span: Span<'a>) -> PResult<'a, Tree> {
         context("script",
-                map(
-                    all_consuming(
-                        delimited(
-                            self.ws_parser.as_fn(), self.call_parser.as_fn(),
-                            self.ws_parser.as_fn(),
-                        )
-                    ),
-                    |call| { Box::new(call ) as Box<dyn Tree>}),
+                all_consuming(
+                    delimited(
+                        self.ws_parser.as_fn(), self.call_parser.as_fn(),
+                        self.ws_parser.as_fn(),
+                    )
+                ),
         )(span)
     }
 }

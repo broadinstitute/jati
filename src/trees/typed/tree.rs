@@ -1,5 +1,11 @@
+use crate::trees::typed::op::Op;
 use crate::trees::types::Type;
 
-pub trait Tree {
-    fn tpe(&self) -> Type;
+pub struct Tree {
+    pub op: Box<dyn Op>,
+    pub kids: Vec<Tree>,
+}
+
+impl Tree {
+    pub(crate) fn tpe(&self) -> Type { self.op.tpe() }
 }
