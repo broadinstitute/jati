@@ -57,7 +57,7 @@ impl SymbolTable for MockSymbols {
     }
 
     fn get_fun(&mut self, id: &Id, args: &[Type]) -> Result<Option<FunTag>, Error> {
-        if id.string == "do_stuff" {
+        if id.string.as_str() == "do_stuff" {
             if args.is_empty() {
                 Ok(Some(self.do_stuff_tag.clone()))
             } else {

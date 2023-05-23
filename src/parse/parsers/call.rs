@@ -35,7 +35,7 @@ impl SParser<Tree> for DefaultCallParser {
                     )),
                     |tup| {
                         let id = tup.0;
-                        let op = Call { id };
+                        let op = Call::new(id);
                         let args: Vec<Tree> = Vec::new();
                         op.new_tree(args).unwrap()
                     },

@@ -7,5 +7,5 @@ pub struct Tree {
 }
 
 impl Tree {
-    pub(crate) fn tpe(&self) -> Type { self.op.tpe() }
+    pub fn tpe(&self) -> Type { self.op.tpe() }
 }

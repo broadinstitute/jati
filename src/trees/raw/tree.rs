@@ -11,9 +11,9 @@ pub struct Tree {
 }
 
 impl Tree {
-    pub(crate) fn into_typed(self: Box<Self>, symbols: &mut dyn SymbolTable)
+    pub fn into_typed(self, symbols: &mut dyn SymbolTable)
                   -> Result<TypedTree, Error> {
-        let Tree { op, kids: raw_kids} = *self;
+        let Tree { op, kids: raw_kids} = self;
         let mut kids: Vec<TypedTree> = Vec::new();
         for raw_kid in raw_kids.into_iter() {
             kids.push(Box::new(raw_kid).into_typed(symbols)?)

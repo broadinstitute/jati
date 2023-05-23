@@ -14,16 +14,6 @@ pub struct Var {
     id: Id
 }
 
-impl Var {
-    fn into_typed_var(self, symbols: &mut dyn SymbolTable) -> Result<TypedVar, Error> {
-        match symbols.get_var(&self.id) {
-            Ok(Some(tag)) => { Ok(TypedVar { id: self.id, tag }) }
-            Ok(None) => { Err(Error::from(SymbolError::no_such_var(&self.id))) }
-            Err(error) => { Err(error) }
-        }
-    }
-}
-
 impl Op for Var {
     fn new_tree(&self, kids: Vec<Tree>) -> Result<Tree, Error> {
         if !kids.is_empty() {
