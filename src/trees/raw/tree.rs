@@ -1,8 +1,11 @@
 use crate::Error;
 use crate::symbols::symbol_table::SymbolTable;
+use crate::trees::MaybeChanged;
 use crate::trees::raw::op::Op;
+use crate::trees::raw::transform::Transformer;
 use crate::trees::typed::tree::Tree as TypedTree;
 use crate::trees::types::Type;
+use crate::util::meta::ValueMeta;
 
 
 pub struct Tree {
@@ -11,6 +14,14 @@ pub struct Tree {
 }
 
 impl Tree {
+    pub fn recursive_transform(self, transformer: &dyn Transformer)
+        -> ValueMeta<Self, MaybeChanged> {
+        let Tree { op, kids } = self;
+        let kids: Vec<Tree> =
+            kids.into_iter().map(|kid| kid.recursive_transform(transformer).value).collect();
+        let tree = Tree { op, kids};
+        transformer.transform(tree)
+    }
     pub fn into_typed(self, symbols: &mut dyn SymbolTable)
                   -> Result<TypedTree, Error> {
         let Tree { op, kids: raw_kids} = self;
