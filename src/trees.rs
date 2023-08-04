@@ -5,6 +5,7 @@ pub mod symbols;
 pub mod types;
 pub mod gen;
 pub mod tree;
+pub mod scope;
 
 pub enum MaybeChanged {
     Unchanged,
