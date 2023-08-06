@@ -3,16 +3,6 @@ pub struct Scope {
 
 }
 
-pub enum Locals {
-    Empty,
-    Single,
-    Multi
-}
-
-pub struct SingleLocal {
-
-}
-
 pub struct Namespace {
 
 }
