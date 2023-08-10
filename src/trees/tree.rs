@@ -1,5 +1,5 @@
-struct Tree<T> {
-    kids: Vec<Tree<T>>,
-    item: T
+struct Tree<N> {
+    kids: Vec<Tree<N>>,
+    node: N
 }
 
