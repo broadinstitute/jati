@@ -1,11 +1,19 @@
 use crate::Error;
 use crate::symbols::symbol_table::SymbolTable;
+use crate::trees::literal::Literal;
 use crate::trees::raw::op::Op;
-use crate::trees::raw::transform::Transformer;
+use crate::trees::raw::var::Var;
 use crate::trees::typed::tree::Tree as TypedTree;
+use crate::trees::typed::tree::Operation as TypedOperation;
 use crate::trees::types::Type;
 
-pub struct Tree {
+pub enum Tree {
+    Var(Var),
+    Literal(Literal),
+    Operation(Operation)
+}
+
+pub struct Operation {
     pub op: Box<dyn Op>,
     pub kids: Vec<Tree>
 }
@@ -13,13 +21,19 @@ pub struct Tree {
 impl Tree {
     pub fn into_typed(self, symbols: &mut dyn SymbolTable)
                   -> Result<TypedTree, Error> {
-        let Tree { op, kids: raw_kids} = self;
-        let mut kids: Vec<TypedTree> = Vec::new();
-        for raw_kid in raw_kids.into_iter() {
-            kids.push(Box::new(raw_kid).into_typed(symbols)?)
+        match self {
+            Tree::Var(var) => Ok(TypedTree::Var(var.into_typed(symbols)?)),
+            Tree::Literal(lit) => Ok(TypedTree::Literal(lit)),
+            Tree::Operation(op) => {
+                let Operation { op, kids } = op;
+                let mut typed_kids: Vec<TypedTree> = Vec::new();
+                for kid in kids.into_iter() {
+                    typed_kids.push(kid.into_typed(symbols)?)
+                }
+                let kid_types = typed_kids.iter().map(|kid| kid.tpe()).collect::<Vec<Type>>();
+                let op = op.into_typed(kid_types, symbols)?;
+                Ok(TypedTree::Operation (TypedOperation { kids: typed_kids, op }))
+            }
         }
-        let kid_types = kids.iter().map(|kid| kid.tpe()).collect::<Vec<Type>>();
-        let op = op.into_typed(kid_types, symbols)?;
-        Ok(TypedTree { kids, op })
     }
 }

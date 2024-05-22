@@ -1,22 +1,25 @@
-use crate::trees::MaybeChanged;
+use crate::trees::literal::Literal;
 use crate::trees::typed::op::Op;
-use crate::trees::typed::transform::Transformer;
+use crate::trees::typed::var::Var;
 use crate::trees::types::Type;
-use crate::util::meta::ValueMeta;
 
-pub struct Tree {
+pub enum Tree {
+    Var(Var),
+    Literal(Literal),
+    Operation(Operation),
+}
+
+pub struct Operation {
     pub op: Box<dyn Op>,
     pub kids: Vec<Tree>,
 }
 
 impl Tree {
-    pub fn recursive_transform(self, transformer: &dyn Transformer)
-                               -> ValueMeta<Self, MaybeChanged> {
-        let Tree { op, kids } = self;
-        let kids: Vec<Tree> =
-            kids.into_iter().map(|kid| kid.recursive_transform(transformer).value).collect();
-        let tree = Tree { op, kids};
-        transformer.transform(tree)
+    pub fn tpe(&self) -> Type {
+        match self {
+            Tree::Var(var) => var.tpe(),
+            Tree::Literal(lit) => lit.tpe(),
+            Tree::Operation(op) => op.op.tpe(),
+        }
     }
-    pub fn tpe(&self) -> Type { self.op.tpe() }
 }

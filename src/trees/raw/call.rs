@@ -2,7 +2,7 @@ use crate::Error;
 use crate::symbols::id::Id;
 use crate::symbols::symbol_table::SymbolTable;
 use crate::trees::raw::op::Op;
-use crate::trees::raw::tree::Tree;
+use crate::trees::raw::tree::{Operation, Tree};
 use crate::trees::symbols::SymbolError;
 use crate::trees::typed::call::Call as TypedCall;
 use crate::trees::typed::op::Op as TypedOp;
@@ -19,7 +19,8 @@ impl Call {
 
 impl Op for Call {
     fn new_tree(&self, kids: Vec<Tree>) -> Result<Tree, Error> {
-        Ok(Tree { op: Box::new(self.clone()), kids })
+        let operation = Operation { op: Box::new(self.clone()), kids };
+        Ok(Tree::Operation(operation))
     }
 
     fn into_typed(self: Box<Self>, kid_types: Vec<Type>, symbols: &mut dyn SymbolTable)
