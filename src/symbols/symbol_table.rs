@@ -17,7 +17,7 @@ pub trait SymbolTable {
 pub struct PreDefFun {
     pub name: &'static str,
     pub uuid: Uuid,
-    pub sig: Arc<FunSig>
+    pub sig: FunSig
 }
 
 pub struct PreDefFunTable {
@@ -29,7 +29,7 @@ impl PreDefFunTable {
         let mut funs: BTreeMap<&'static str, FunTag> = BTreeMap::new();
         for pre_def_fun in pre_def_funs {
             let key = FunKey::new(pre_def_fun.uuid);
-            let sig = pre_def_fun.sig.clone();
+            let sig = Arc::new(pre_def_fun.sig.clone());
             let tag = FunTag { key, sig };
             funs.insert(pre_def_fun.name, tag);
         }
