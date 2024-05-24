@@ -15,3 +15,9 @@ impl Display for Id {
         write!(f, "{}", self.string)
     }
 }
+
+impl PartialEq<Self> for Id {
+    fn eq(&self, other: &Self) -> bool { self.string == other.string }
+}
+
+impl Eq for Id {}

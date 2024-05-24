@@ -24,19 +24,6 @@ fn script_parser() -> ScriptParser {
     ScriptParser::new(ws_parser, id_parser)
 }
 
-struct SimpleFunSig {}
-
-impl FunSig for SimpleFunSig {
-    fn tpe(&self) -> Type { Type::Unit }
-
-    fn check_arg_types(&self, arg_types: &[&Type]) -> Result<(), ArgsFailure> {
-        if arg_types.is_empty() {
-            Ok(())
-        } else {
-            Err(ArgsFailure::new_wrong_number(arg_types.len(), 0))?
-        }
-    }
-}
 
 struct MockSymbols {
     do_stuff_tag: FunTag,
@@ -45,18 +32,18 @@ struct MockSymbols {
 impl MockSymbols {
     pub fn new() -> MockSymbols {
         let key = FunKey::next();
-        let sig = Arc::new(SimpleFunSig {}) as Arc<dyn FunSig>;
+        let sig = Arc::new(FunSig::Fixed { tpe: Type::Unit, arg_types: vec![] });
         let do_stuff_tag = FunTag { key, sig };
         MockSymbols { do_stuff_tag }
     }
 }
 
 impl SymbolTable for MockSymbols {
-    fn get_var(&mut self, _id: &Id) -> Result<Option<VarTag>, Error> {
+    fn get_var(&mut self, _id: &Id) -> Result<Option<VarTag>, SymbolError> {
         Ok(None)
     }
 
-    fn get_fun(&mut self, id: &Id, args: &[Type]) -> Result<Option<FunTag>, Error> {
+    fn get_fun(&mut self, id: &Id, args: &[Type]) -> Result<Option<FunTag>, SymbolError> {
         if id.string.as_str() == "do_stuff" {
             if args.is_empty() {
                 Ok(Some(self.do_stuff_tag.clone()))

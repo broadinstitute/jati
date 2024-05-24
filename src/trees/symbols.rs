@@ -1,5 +1,6 @@
-use std::fmt::{Display, Formatter};
+use std::fmt::{Debug, Display, Formatter};
 use crate::symbols::id::Id;
+use crate::trees::types::Type;
 
 pub enum SymbolError {
     NoSuchVar(Id),
@@ -26,6 +27,10 @@ impl SymbolError {
                         format!("Function {} needs {} args, but found {}.", fun_name, expected,
                                 actual)
                     }
+                    ArgsFailure::WrongType { pos, actual, expected } => {
+                        format!("Function {}'s arg {} should be of type {}, but found {}.",
+                                fun_name, pos, expected, actual)
+                    }
                 }
             }
         }
@@ -44,11 +49,31 @@ pub struct ArgsError {
 }
 
 pub enum ArgsFailure {
-    WrongNumber { actual: usize, expected: usize }
+    WrongNumber { actual: usize, expected: usize },
+    WrongType { pos: usize, actual: Type, expected: Type },
+}
+
+impl ArgsError {
+    pub fn new(fun_id: Id, args_failure: ArgsFailure) -> ArgsError {
+        ArgsError { fun_id, args_failure }
+    }
 }
 
 impl ArgsFailure {
     pub fn new_wrong_number(actual: usize, expected: usize) -> ArgsFailure {
-        ArgsFailure::WrongNumber { actual, expected}
+        ArgsFailure::WrongNumber { actual, expected }
     }
+    pub fn new_wrong_type(pos: usize, actual: Type, expected: Type) -> ArgsFailure {
+        ArgsFailure::WrongType { pos, actual, expected }
+    }
+}
+
+impl Debug for SymbolError {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result { Display::fmt(self, f) }
+}
+
+impl std::error::Error for SymbolError {}
+
+impl From<ArgsError> for SymbolError {
+    fn from(args_error: ArgsError) -> Self { SymbolError::Args(args_error) }
 }

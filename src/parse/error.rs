@@ -327,3 +327,5 @@ impl Debug for PError {
         writeln!(f, "\n{}", self.create_report())
     }
 }
+
+impl std::error::Error for PError {}
