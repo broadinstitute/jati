@@ -14,24 +14,24 @@ pub trait SymbolTable {
     fn get_fun(&mut self, id: &Id, args: &[Type]) -> Result<Option<FunTag>, SymbolError>;
 }
 
-pub struct PreDefFun {
-    pub name: &'static str,
+pub struct PreDefFun<'a> {
+    pub name: &'a str,
     pub uuid: Uuid,
     pub sig: FunSig
 }
 
 pub struct PreDefFunTable {
-    funs: BTreeMap<&'static str, FunTag>
+    funs: BTreeMap<String, FunTag>
 }
 
 impl PreDefFunTable {
-    pub fn new(pre_def_funs: &'static [PreDefFun]) -> Self {
-        let mut funs: BTreeMap<&'static str, FunTag> = BTreeMap::new();
+    pub fn new(pre_def_funs: &[PreDefFun]) -> Self {
+        let mut funs: BTreeMap<String, FunTag> = BTreeMap::new();
         for pre_def_fun in pre_def_funs {
             let key = FunKey::new(pre_def_fun.uuid);
             let sig = Arc::new(pre_def_fun.sig.clone());
             let tag = FunTag { key, sig };
-            funs.insert(pre_def_fun.name, tag);
+            funs.insert(pre_def_fun.name.to_string(), tag);
         }
         PreDefFunTable { funs }
     }
