@@ -15,9 +15,9 @@ pub trait SymbolTable {
 }
 
 pub struct PreDefFun {
-    name: &'static str,
-    uuid: Uuid,
-    sig: Arc<FunSig>
+    pub name: &'static str,
+    pub uuid: Uuid,
+    pub sig: Arc<FunSig>
 }
 
 pub struct PreDefFunTable {
