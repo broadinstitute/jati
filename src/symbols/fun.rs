@@ -1,7 +1,11 @@
 use std::sync::Arc;
 use uuid::Uuid;
+use crate::error::Error;
+use crate::run::RunState;
+use crate::symbols::symbol_table::SymbolTable;
 use crate::trees::symbols::ArgsFailure;
 use crate::trees::types::Type;
+use crate::trees::values::Value;
 
 #[derive(Copy, Clone, Eq, PartialEq)]
 pub struct FunKey {
@@ -51,4 +55,13 @@ pub struct FunTag {
     pub key: FunKey,
     pub sig: Arc<FunSig>,
 }
+
+pub struct PreDefFun<'a, R: RunState, S: SymbolTable> {
+    pub name: &'a str,
+    pub uuid: Uuid,
+    pub sig: FunSig,
+    pub run: fn(args: &[Value], &mut R, &mut S) -> Result<Value, Error>
+}
+
+
 

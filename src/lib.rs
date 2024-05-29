@@ -10,6 +10,7 @@ pub mod parse;
 pub mod trees;
 pub mod symbols;
 mod util;
+mod run;
 
 pub fn parse_string<T, P>(parser: P, string: &str) -> Result<T, Error>
     where P: SParser<T>

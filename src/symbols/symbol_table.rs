@@ -1,9 +1,8 @@
 use std::collections::BTreeMap;
 use std::sync::Arc;
+use crate::run::RunState;
 
-use uuid::Uuid;
-
-use crate::symbols::fun::{FunKey, FunSig, FunTag};
+use crate::symbols::fun::{FunKey, FunTag, PreDefFun};
 use crate::symbols::id::Id;
 use crate::symbols::var::VarTag;
 use crate::trees::symbols::{ArgsError, SymbolError};
@@ -14,18 +13,12 @@ pub trait SymbolTable {
     fn get_fun(&mut self, id: &Id, args: &[Type]) -> Result<Option<FunTag>, SymbolError>;
 }
 
-pub struct PreDefFun<'a> {
-    pub name: &'a str,
-    pub uuid: Uuid,
-    pub sig: FunSig
-}
-
 pub struct PreDefFunTable {
     funs: BTreeMap<String, FunTag>
 }
 
 impl PreDefFunTable {
-    pub fn new(pre_def_funs: &[PreDefFun]) -> Self {
+    pub fn new<R: RunState>(pre_def_funs: &[PreDefFun<R, Self>]) -> Self {
         let mut funs: BTreeMap<String, FunTag> = BTreeMap::new();
         for pre_def_fun in pre_def_funs {
             let key = FunKey::new(pre_def_fun.uuid);
