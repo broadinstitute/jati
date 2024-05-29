@@ -1,6 +1,7 @@
 use std::sync::Arc;
+
 use uuid::Uuid;
-use crate::error::Error;
+
 use crate::run::RunState;
 use crate::symbols::symbol_table::SymbolTable;
 use crate::trees::symbols::ArgsFailure;
@@ -56,11 +57,11 @@ pub struct FunTag {
     pub sig: Arc<FunSig>,
 }
 
-pub struct PreDefFun<'a, R: RunState, S: SymbolTable> {
+pub struct PreDefFun<'a, R: RunState, S: SymbolTable, E: std::error::Error> {
     pub name: &'a str,
     pub uuid: Uuid,
     pub sig: FunSig,
-    pub run: fn(args: &[Value], &mut R, &mut S) -> Result<Value, Error>
+    pub run: fn(args: &[Value], &mut R, &mut S) -> Result<Value, E>
 }
 
 

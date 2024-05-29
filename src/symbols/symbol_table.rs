@@ -18,7 +18,7 @@ pub struct PreDefFunTable {
 }
 
 impl PreDefFunTable {
-    pub fn new<R: RunState>(pre_def_funs: &[PreDefFun<R, Self>]) -> Self {
+    pub fn new<R: RunState, E: std::error::Error>(pre_def_funs: &[PreDefFun<R, Self, E>]) -> Self {
         let mut funs: BTreeMap<String, FunTag> = BTreeMap::new();
         for pre_def_fun in pre_def_funs {
             let key = FunKey::new(pre_def_fun.uuid);
