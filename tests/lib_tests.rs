@@ -5,7 +5,7 @@ use jati::parse::parsers::id::RustIdParser;
 use jati::parse::parsers::script::ScriptParser;
 use jati::parse::parsers::white::DefaultWhiteSpaceParser;
 use jati::trees::symbols::{ArgsFailure, SymbolError};
-use jati::symbols::fun::{FunKey, FunSig, FunTag};
+use jati::symbols::fun::{OpKey, FunSig, OpTag};
 use jati::symbols::id::Id;
 use jati::symbols::symbol_table::SymbolTable;
 use jati::symbols::var::VarTag;
@@ -26,14 +26,14 @@ fn script_parser() -> ScriptParser {
 
 
 struct MockSymbols {
-    do_stuff_tag: FunTag,
+    do_stuff_tag: OpTag,
 }
 
 impl MockSymbols {
     pub fn new() -> MockSymbols {
-        let key = FunKey::next();
+        let key = OpKey::next();
         let sig = Arc::new(FunSig::Fixed { tpe: Type::Unit, arg_types: vec![] });
-        let do_stuff_tag = FunTag { key, sig };
+        let do_stuff_tag = OpTag { key, sig };
         MockSymbols { do_stuff_tag }
     }
 }
@@ -43,7 +43,7 @@ impl SymbolTable for MockSymbols {
         Ok(None)
     }
 
-    fn get_fun(&mut self, id: &Id, args: &[Type]) -> Result<Option<FunTag>, SymbolError> {
+    fn get_fun(&mut self, id: &Id, args: &[Type]) -> Result<Option<OpTag>, SymbolError> {
         if id.string.as_str() == "do_stuff" {
             if args.is_empty() {
                 Ok(Some(self.do_stuff_tag.clone()))

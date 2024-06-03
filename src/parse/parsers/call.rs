@@ -3,7 +3,6 @@ use nom::bytes::complete::tag;
 use nom::combinator::{map, opt};
 use nom::error::context;
 use nom::sequence::{pair, tuple};
-use crate::trees::raw::call::Call;
 use crate::{PResult, Span, SParser};
 use crate::parse::parsers::id::IdParser;
 use crate::parse::parsers::white::WhiteSpaceParser;
@@ -35,7 +34,7 @@ impl SParser<Tree> for DefaultCallParser {
                     )),
                     |tup| {
                         let id = tup.0;
-                        let op = Call::new(id);
+                        let op = Op::new(id);
                         let args: Vec<Tree> = Vec::new();
                         op.new_tree(args).unwrap()
                     },

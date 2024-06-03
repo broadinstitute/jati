@@ -1,15 +1,17 @@
+use std::sync::Arc;
 use crate::trees::typed::tree::Tree;
 use crate::trees::types::Type;
 
+#[derive(Clone)]
 pub enum Value {
-    String(String),
+    String(Arc<String>),
     Float(f64),
     Int(i64),
     Char(char),
     Bool(bool),
     Unit,
     Never,
-    Symbolic(Tree)
+    Symbolic(Arc<Tree>)
 }
 
 impl Value {
