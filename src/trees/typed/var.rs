@@ -8,6 +8,6 @@ pub struct Var {
 }
 
 impl Var {
-    pub(crate) fn tpe(&self) -> Type { self.tag.sig.tpe() }
+    pub(crate) fn tpe(&self) -> Type { self.tag.sig.tpe }
 }
 

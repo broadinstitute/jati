@@ -7,14 +7,14 @@ use crate::trees::symbols::ArgsFailure;
 use crate::trees::types::Type;
 use crate::trees::values::Value;
 
-#[derive(Copy, Clone, Eq, PartialEq)]
+#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd)]
 pub struct OpKey {
     uuid: Uuid,
 }
 
 impl OpKey {
     pub fn new(uuid: Uuid) -> OpKey { OpKey { uuid } }
-    pub fn next() -> OpKey {
+    pub fn create_random() -> OpKey {
         let uuid = Uuid::new_v4();
         OpKey { uuid }
     }
@@ -56,7 +56,7 @@ pub struct OpTag {
     pub sig: Arc<OpSig>,
 }
 
-type Func<R> =
+pub type Func<R> =
 fn(args: &[Value], &mut R, &mut <R as Runtime>::S) -> Result<Value, <R as Runtime>::E>;
 
 pub struct OpFn<R: Runtime + ?Sized> {

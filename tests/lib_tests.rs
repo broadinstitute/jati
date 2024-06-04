@@ -31,7 +31,7 @@ struct MockSymbols {
 
 impl MockSymbols {
     pub fn new() -> MockSymbols {
-        let key = OpKey::next();
+        let key = OpKey::create_random();
         let sig = Arc::new(OpSig::Fixed { tpe: Type::Unit, arg_types: vec![] });
         let do_stuff_tag = OpTag { key, sig };
         MockSymbols { do_stuff_tag }
@@ -39,11 +39,11 @@ impl MockSymbols {
 }
 
 impl SymbolTable for MockSymbols {
-    fn get_var(&mut self, _id: &Id) -> Result<Option<VarTag>, SymbolError> {
+    fn resolve_var(&mut self, _id: &Id) -> Result<Option<VarTag>, SymbolError> {
         Ok(None)
     }
 
-    fn get_fun(&mut self, id: &Id, args: &[Type]) -> Result<Option<OpTag>, SymbolError> {
+    fn resolve_fun(&mut self, id: &Id, args: &[Type]) -> Result<Option<OpTag>, SymbolError> {
         if id.string.as_str() == "do_stuff" {
             if args.is_empty() {
                 Ok(Some(self.do_stuff_tag.clone()))

@@ -1,4 +1,5 @@
 use crate::Error;
+use crate::runtime::Runtime;
 use crate::symbols::symbol_table::SymbolTable;
 use crate::trees::raw::op::Op;
 use crate::trees::raw::var::Var;
@@ -19,7 +20,7 @@ pub struct Operation {
 }
 
 impl Tree {
-    pub fn into_typed(self, symbols: &mut dyn SymbolTable)
+    pub fn into_typed<R: Runtime>(self, symbols: &mut dyn SymbolTable<R>)
                   -> Result<TypedTree, Error> {
         match self {
             Tree::Var(var) => Ok(TypedTree::Var(var.into_typed(symbols)?)),

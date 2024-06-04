@@ -4,7 +4,7 @@ use crate::symbols::var::VarKey;
 use crate::trees::values::Value;
 
 pub trait Runtime {
-    type S: SymbolTable;
+    type S: SymbolTable<Self>;
     type E: std::error::Error;
     fn request_stop(&mut self);
     fn stop_requested(&self) -> bool;
