@@ -6,10 +6,10 @@ use crate::trees::values::Value;
 pub enum Tree {
     Var(Var),
     Literal(Value),
-    Op(Operation),
+    Op(OpCall),
 }
 
-pub struct Operation {
+pub struct OpCall {
     pub op: Op,
     pub kids: Vec<Tree>,
 }

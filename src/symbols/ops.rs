@@ -2,8 +2,7 @@ use std::sync::Arc;
 
 use uuid::Uuid;
 
-use crate::run::RunState;
-use crate::symbols::symbol_table::SymbolTable;
+use crate::runtime::Runtime;
 use crate::trees::symbols::ArgsFailure;
 use crate::trees::types::Type;
 use crate::trees::values::Value;
@@ -57,21 +56,24 @@ pub struct OpTag {
     pub sig: Arc<OpSig>,
 }
 
-pub struct OpFn<R: RunState<E>, S: SymbolTable, E: std::error::Error> {
-    func: fn(args: &[Value], &mut R, &mut S) -> Result<Value, E>,
+type Func<R> =
+fn(args: &[Value], &mut R, &mut <R as Runtime>::S) -> Result<Value, <R as Runtime>::E>;
+
+pub struct OpFn<R: Runtime + ?Sized> {
+    pub(crate) func: Func<R>,
 }
 
-impl<R: RunState<E>, S: SymbolTable, E: std::error::Error> OpFn<R, S, E> {
-    pub fn new(func: fn(args: &[Value], &mut R, &mut S) -> Result<Value, E>) -> OpFn<R, S, E> {
+impl<R: Runtime> OpFn<R> {
+    pub fn new(func: Func<R>) -> OpFn<R> {
         OpFn { func }
     }
 }
 
-pub struct OpPreDef<'a, R: RunState<E>, S: SymbolTable, E: std::error::Error> {
+pub struct OpPreDef<'a, R: Runtime> {
     pub name: &'a str,
     pub uuid: Uuid,
     pub sig: OpSig,
-    pub func: OpFn<R, S, E>,
+    pub func: OpFn<R>,
 }
 
 

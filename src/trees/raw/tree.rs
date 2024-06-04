@@ -2,7 +2,7 @@ use crate::Error;
 use crate::symbols::symbol_table::SymbolTable;
 use crate::trees::raw::op::Op;
 use crate::trees::raw::var::Var;
-use crate::trees::typed::tree::Operation as TypedOperation;
+use crate::trees::typed::tree::OpCall as TypedOperation;
 use crate::trees::typed::tree::Tree as TypedTree;
 use crate::trees::types::Type;
 use crate::trees::values::Value;

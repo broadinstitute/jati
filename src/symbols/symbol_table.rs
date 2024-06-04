@@ -1,8 +1,8 @@
 use std::collections::BTreeMap;
 use std::sync::Arc;
-use crate::run::RunState;
+use crate::runtime::Runtime;
 
-use crate::symbols::fun::{OpKey, OpTag, OpPreDef};
+use crate::symbols::ops::{OpKey, OpTag, OpPreDef};
 use crate::symbols::id::Id;
 use crate::symbols::var::VarTag;
 use crate::trees::symbols::{ArgsError, SymbolError};
@@ -14,11 +14,12 @@ pub trait SymbolTable {
 }
 
 pub struct PreDefFunTable {
-    funs: BTreeMap<String, OpTag>
+    funs: BTreeMap<String, OpTag>,
 }
 
 impl PreDefFunTable {
-    pub fn new<R: RunState<E>, E: std::error::Error>(pre_def_funs: &[OpPreDef<R, Self, E>]) -> Self {
+    pub fn new<R: Runtime,
+        E: std::error::Error>(pre_def_funs: &[OpPreDef<R>]) -> Self {
         let mut funs: BTreeMap<String, OpTag> = BTreeMap::new();
         for pre_def_fun in pre_def_funs {
             let key = OpKey::new(pre_def_fun.uuid);
@@ -37,7 +38,7 @@ impl SymbolTable for PreDefFunTable {
 
     fn get_fun(&mut self, id: &Id, args: &[Type]) -> Result<Option<OpTag>, SymbolError> {
         match self.funs.get(id.string.as_str()) {
-            None => { Ok(None)}
+            None => { Ok(None) }
             Some(tag) => {
                 tag.sig.check_arg_types(args)
                     .map_err(|arg_fail| ArgsError::new(id.clone(), arg_fail))?;

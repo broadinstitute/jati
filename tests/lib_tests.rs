@@ -5,7 +5,7 @@ use jati::parse::parsers::id::RustIdParser;
 use jati::parse::parsers::script::ScriptParser;
 use jati::parse::parsers::white::DefaultWhiteSpaceParser;
 use jati::trees::symbols::{ArgsFailure, SymbolError};
-use jati::symbols::fun::{OpKey, FunSig, OpTag};
+use jati::symbols::ops::{OpKey, OpSig, OpTag};
 use jati::symbols::id::Id;
 use jati::symbols::symbol_table::SymbolTable;
 use jati::symbols::var::VarTag;
@@ -32,7 +32,7 @@ struct MockSymbols {
 impl MockSymbols {
     pub fn new() -> MockSymbols {
         let key = OpKey::next();
-        let sig = Arc::new(FunSig::Fixed { tpe: Type::Unit, arg_types: vec![] });
+        let sig = Arc::new(OpSig::Fixed { tpe: Type::Unit, arg_types: vec![] });
         let do_stuff_tag = OpTag { key, sig };
         MockSymbols { do_stuff_tag }
     }
