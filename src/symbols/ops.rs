@@ -64,7 +64,7 @@ pub struct OpFn<R: Runtime + ?Sized> {
 }
 
 impl<R: Runtime> OpFn<R> {
-    pub fn new(func: Func<R>) -> OpFn<R> {
+    pub const fn new(func: Func<R>) -> OpFn<R> {
         OpFn { func }
     }
 }
