@@ -1,74 +1,54 @@
-use std::sync::Arc;
 use jati::error::Error;
-use jati::parse_string;
 use jati::parse::parsers::id::RustIdParser;
 use jati::parse::parsers::script::ScriptParser;
 use jati::parse::parsers::white::DefaultWhiteSpaceParser;
-use jati::trees::symbols::{ArgsFailure, SymbolError};
-use jati::symbols::ops::{OpKey, OpSig, OpTag};
+use jati::parse_string;
+use jati::runtime::Runtime;
 use jati::symbols::id::Id;
-use jati::symbols::symbol_table::SymbolTable;
-use jati::symbols::var::VarTag;
+use jati::symbols::ops::{OpFn, OpKey, OpSig};
+use jati::symbols::symbol_table::{BasicSymbolTable, SymbolTable};
+use jati::symbols::var::VarKey;
 use jati::trees::types::Type;
+use jati::trees::values::Value;
 
-fn print_error<T>(result: Result<T, Error>) -> Result<T, Error> {
-    if let Err(error) = &result {
-        println!("{}", error)
+struct TestRuntime {}
+
+impl Runtime for TestRuntime {
+    type S = BasicSymbolTable<Self>;
+    type E = Error;
+
+    fn request_stop(&mut self) {}
+
+    fn stop_requested(&self) -> bool { false }
+
+    fn set_var_value(&mut self, _key: &VarKey, _value: Value) -> Result<(), Self::E> {
+        Ok(())
     }
-    result
-}
 
+    fn get_var_value(&self, _key: &VarKey) -> Result<Value, Self::E> {
+        Ok(Value::Unit)
+    }
+
+    fn get_op_func(&self, _key: &OpKey) -> Result<OpFn<Self>, Self::E> {
+        Ok(OpFn::new(|_, _, _| Ok(Value::Unit)))
+    }
+}
 fn script_parser() -> ScriptParser {
     let ws_parser = DefaultWhiteSpaceParser::new();
     let id_parser = RustIdParser::new();
     ScriptParser::new(ws_parser, id_parser)
 }
 
-
-struct MockSymbols {
-    do_stuff_tag: OpTag,
-}
-
-impl MockSymbols {
-    pub fn new() -> MockSymbols {
-        let key = OpKey::create_random();
-        let sig = Arc::new(OpSig::Fixed { tpe: Type::Unit, arg_types: vec![] });
-        let do_stuff_tag = OpTag { key, sig };
-        MockSymbols { do_stuff_tag }
-    }
-}
-
-impl SymbolTable for MockSymbols {
-    fn resolve_var(&mut self, _id: &Id) -> Result<Option<VarTag>, SymbolError> {
-        Ok(None)
-    }
-
-    fn resolve_fun(&mut self, id: &Id, args: &[Type]) -> Result<Option<OpTag>, SymbolError> {
-        if id.string.as_str() == "do_stuff" {
-            if args.is_empty() {
-                Ok(Some(self.do_stuff_tag.clone()))
-            } else {
-                let args_failure =
-                    ArgsFailure::new_wrong_number(args.len(), 0);
-                Err(SymbolError::args_issue(id, args_failure))?
-            }
-        } else {
-            Ok(None)
-        }
-    }
-}
-
 #[test]
 fn script1() {
     let script_parser = script_parser();
     const SCRIPT: &str = "do_stuff();";
-    let parse_result = parse_string(script_parser, SCRIPT);
-    if let Ok(raw_tree) = parse_result {
-        let mut symbols = MockSymbols::new();
-        let typed_tree = raw_tree.into_typed(&mut symbols).unwrap();
-        assert_eq!(typed_tree.tpe(), Type::Unit);
-    } else {
-        assert!(print_error(parse_result).is_ok());
-    }
+    let raw_tree = parse_string(script_parser, SCRIPT).unwrap();
+    let mut symbols = BasicSymbolTable::<TestRuntime>::new();
+    symbols.define_fun(Id::new("do_stuff".to_string()),
+                       OpSig::Fixed { tpe: Type::Unit, arg_types: vec![] },
+                       |_, _, _| Ok(Value::Unit)).unwrap();
+    let typed_tree = raw_tree.into_typed(&mut symbols).unwrap();
+    assert_eq!(typed_tree.tpe(), Type::Unit);
 }
 
