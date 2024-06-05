@@ -3,7 +3,7 @@ use std::sync::Arc;
 
 use crate::runtime::Runtime;
 use crate::symbols::id::Id;
-use crate::symbols::ops::{Func, OpKey, OpSig, OpTag};
+use crate::symbols::ops::{Func, OpKey, OpPreDef, OpSig, OpTag};
 use crate::symbols::var::{VarKey, VarSig, VarTag};
 use crate::trees::symbols::{ArgsError, SymbolError};
 use crate::trees::types::Type;
@@ -11,6 +11,7 @@ use crate::trees::values::Value;
 
 pub trait SymbolTable<R: Runtime + ?Sized> {
     fn define_var(&mut self, id: Id, value: Value) -> Result<VarKey, SymbolError>;
+    fn add_predef_fun(&mut self, op_pre_def: &OpPreDef<R>) -> Result<OpKey, SymbolError>;
     fn define_fun(&mut self, id: Id, sig: OpSig, func: Func<R>) -> Result<OpKey, SymbolError>;
     fn resolve_var(&mut self, id: &Id) -> Result<Option<VarTag>, SymbolError>;
     fn resolve_fun(&mut self, id: &Id, args: &[Type]) -> Result<Option<OpTag>, SymbolError>;
@@ -34,6 +35,14 @@ impl<R: Runtime> BasicSymbolTable<R> {
             funcs: BTreeMap::new(),
         }
     }
+
+    pub fn with_predef_funs(pre_defs: &[OpPreDef<R>]) -> Result<Self, SymbolError> {
+        let mut table = Self::new();
+        for pre_def in pre_defs {
+            table.add_predef_fun(pre_def).unwrap();
+        }
+        Ok(table)
+    }
 }
 
 impl<R: Runtime> Default for BasicSymbolTable<R> {
@@ -49,6 +58,11 @@ impl<R: Runtime> SymbolTable<R> for BasicSymbolTable<R> {
         self.var_defs.insert(id, tag.clone());
         self.values.insert(key, value);
         Ok(key)
+    }
+
+    fn add_predef_fun(&mut self, op_pre_def: &OpPreDef<R>) -> Result<OpKey, SymbolError> {
+        let id = Id::new(op_pre_def.name.to_string());
+        self.define_fun(id, op_pre_def.sig.clone(), op_pre_def.func.func)
     }
 
     fn define_fun(&mut self, id: Id, sig: OpSig, func: Func<R>) -> Result<OpKey, SymbolError> {

@@ -69,9 +69,16 @@ impl<R: Runtime> OpFn<R> {
     }
 }
 
-pub struct OpPreDef<'a, R: Runtime> {
+impl<R: Runtime> From<fn(args: &[Value], &mut R, &mut <R as Runtime>::S)
+    -> Result<Value, <R as Runtime>::E>> for OpFn<R> {
+    fn from(func: fn(args: &[Value], &mut R, &mut <R as Runtime>::S)
+        -> Result<Value, <R as Runtime>::E>) -> OpFn<R> {
+        OpFn { func }
+    }
+}
+
+pub struct OpPreDef<'a, R: Runtime + ?Sized> {
     pub name: &'a str,
-    pub uuid: Uuid,
     pub sig: OpSig,
     pub func: OpFn<R>,
 }
