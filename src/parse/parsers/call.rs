@@ -7,7 +7,7 @@ use crate::{PResult, Span, SParser};
 use crate::parse::parsers::id::IdParser;
 use crate::parse::parsers::white::WhiteSpaceParser;
 use crate::trees::raw::tree::Tree;
-use crate::trees::raw::op::Op;
+use crate::trees::raw::op::{IdOp, Op, OpExpression, OpSyntax};
 
 pub trait CallParser: SParser<Tree> {}
 
@@ -34,9 +34,10 @@ impl SParser<Tree> for DefaultCallParser {
                     )),
                     |tup| {
                         let id = tup.0;
-                        let op = Op::new(id);
+                        let syntax = OpSyntax::Call;
+                        let op = Op::Id(IdOp::new(id, syntax));
                         let args: Vec<Tree> = Vec::new();
-                        op.new_tree(args).unwrap()
+                        OpExpression::new(op, args).into_tree()
                     },
                 ),
         )(span)
