@@ -61,7 +61,7 @@ fn(args: &[Value], &mut R, &mut <R as Runtime>::S) -> Result<Value, <R as Runtim
 
 #[derive(Clone)]
 pub struct OpFn<R: Runtime + ?Sized> {
-    pub(crate) func: Func<R>,
+    pub func: Func<R>,
 }
 
 impl<R: Runtime> OpFn<R> {
