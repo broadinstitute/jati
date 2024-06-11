@@ -59,7 +59,6 @@ pub struct OpTag {
 pub type Func<R> =
 fn(args: &[Value], &mut R, &mut <R as Runtime>::S) -> Result<Value, <R as Runtime>::E>;
 
-#[derive(Clone)]
 pub struct OpFn<R: Runtime + ?Sized> {
     pub func: Func<R>,
 }

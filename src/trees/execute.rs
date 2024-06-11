@@ -50,8 +50,7 @@ impl<R: Runtime> Executor<R> for SimpleExecutor<R> {
                             }
                         }
                         Op::Id(id_op) => {
-                            let op_fn = runtime.get_op_func(id_op.key())?;
-                            (op_fn.func)(&values, runtime, symbols)
+                            runtime.apply_func(id_op.key(), &values, symbols)
                         }
                     }
                 }
