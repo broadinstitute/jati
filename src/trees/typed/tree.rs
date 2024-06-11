@@ -1,5 +1,6 @@
 use std::fmt::Display;
-use crate::trees::typed::op::Op;
+
+use crate::trees::typed::op::OpExpression;
 use crate::trees::typed::var::Var;
 use crate::trees::types::Type;
 use crate::trees::values::Value;
@@ -7,12 +8,7 @@ use crate::trees::values::Value;
 pub enum Tree {
     Var(Var),
     Literal(Value),
-    Op(OpCall),
-}
-
-pub struct OpCall {
-    pub op: Op,
-    pub kids: Vec<Tree>,
+    Op(OpExpression),
 }
 
 impl Tree {
@@ -20,7 +16,7 @@ impl Tree {
         match self {
             Tree::Var(var) => var.tpe(),
             Tree::Literal(lit) => lit.tpe(),
-            Tree::Op(op) => op.op.tpe(),
+            Tree::Op(op) => op.tpe(),
         }
     }
 }
