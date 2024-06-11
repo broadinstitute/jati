@@ -1,6 +1,7 @@
 use std::fmt::{Display, Formatter};
 use std::sync::Arc;
-use crate::trees::typed::tree::Tree;
+use crate::trees::props::Typed;
+use crate::trees::tree::Tree;
 use crate::trees::types::Type;
 
 #[derive(Clone)]
@@ -12,7 +13,7 @@ pub enum Value {
     Bool(bool),
     Unit,
     Never,
-    Symbolic(Arc<Tree>),
+    Symbolic(Arc<Tree<Typed>>),
 }
 
 impl Value {

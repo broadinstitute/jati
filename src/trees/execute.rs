@@ -1,12 +1,14 @@
 use std::marker::PhantomData;
 
 use crate::runtime::Runtime;
-use crate::trees::typed::op::{NonIdOp, Op};
-use crate::trees::typed::tree::Tree;
+use crate::trees::op::{NonIdOp, Op};
+use crate::trees::props::Typed;
+use crate::trees::tree::Tree;
 use crate::trees::values::Value;
 
 pub trait Executor<R: Runtime> {
-    fn execute(&self, tree: &Tree, runtime: &mut R, symbols: &mut R::S) -> Result<Value, R::E>;
+    fn execute(&self, tree: &Tree<Typed>, runtime: &mut R, symbols: &mut R::S)
+        -> Result<Value, R::E>;
 }
 
 pub struct SimpleExecutor<R: Runtime> {
@@ -21,7 +23,8 @@ impl<R: Runtime> SimpleExecutor<R> {
 
 
 impl<R: Runtime> Executor<R> for SimpleExecutor<R> {
-    fn execute(&self, tree: &Tree, runtime: &mut R, symbols: &mut R::S) -> Result<Value, R::E> {
+    fn execute(&self, tree: &Tree<Typed>, runtime: &mut R, symbols: &mut R::S)
+        -> Result<Value, R::E> {
         match tree {
             Tree::Var(var) => { runtime.get_var_value(&var.tag.key) }
             Tree::Literal(value) => { Ok(value.clone()) }
@@ -37,9 +40,12 @@ impl<R: Runtime> Executor<R> for SimpleExecutor<R> {
                     match &op.op {
                         Op::NonId(non_id_op) => {
                             match non_id_op {
-                                NonIdOp::Block => {
+                                NonIdOp::BlockOpen => {
                                     values.last()
                                         .map_or(Ok(Value::Unit), |v| Ok(v.clone()))
+                                }
+                                NonIdOp::BlockClosed => {
+                                    Ok(Value::Unit)
                                 }
                             }
                         }

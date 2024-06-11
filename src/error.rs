@@ -1,7 +1,6 @@
 use std::fmt::{Debug, Display, Formatter};
 use crate::parse::error::PError;
 use crate::trees::symbols::SymbolError;
-use crate::trees::raw::error::TreeError;
 
 pub enum ErrorKind { Parse, Tree, Symbol }
 pub enum Error {
@@ -70,10 +69,6 @@ impl From<PError> for Error {
     fn from(parse_error: PError) -> Self  {
         import_error(ErrorKind::Parse, parse_error)
     }
-}
-
-impl From<TreeError> for Error {
-    fn from(tree_error: TreeError) -> Self { import_error(ErrorKind::Tree, tree_error) }
 }
 
 impl From<SymbolError> for Error {

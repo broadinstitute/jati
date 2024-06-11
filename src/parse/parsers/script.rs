@@ -3,7 +3,8 @@ use nom::combinator::all_consuming;
 use nom::error::context;
 use nom::sequence::delimited;
 use crate::{CallParser, DefaultCallParser, IdParser, PResult, Span, SParser, WhiteSpaceParser};
-use crate::trees::raw::tree::Tree;
+use crate::trees::props::Raw;
+use crate::trees::tree::Tree;
 
 pub struct ScriptParser {
     ws_parser: Rc<dyn WhiteSpaceParser>,
@@ -18,8 +19,8 @@ impl ScriptParser {
     }
 }
 
-impl SParser<Tree> for ScriptParser {
-    fn parse_span<'a>(&self, span: Span<'a>) -> PResult<'a, Tree> {
+impl SParser<Tree<Raw>> for ScriptParser {
+    fn parse_span<'a>(&self, span: Span<'a>) -> PResult<'a, Tree<Raw>> {
         context("script",
                 all_consuming(
                     delimited(
