@@ -5,9 +5,8 @@ use jati::parse::parsers::white::DefaultWhiteSpaceParser;
 use jati::parse_string;
 use jati::runtime::Runtime;
 use jati::symbols::id::Id;
-use jati::symbols::ops::{OpFn, OpKey, OpSig};
+use jati::symbols::ops::OpSig;
 use jati::symbols::symbol_table::{BasicSymbolTable, SymbolTable};
-use jati::symbols::var::VarKey;
 use jati::trees::types::Type;
 use jati::trees::values::Value;
 
@@ -20,18 +19,6 @@ impl Runtime for TestRuntime {
     fn request_stop(&mut self) {}
 
     fn stop_requested(&self) -> bool { false }
-
-    fn set_var_value(&mut self, _key: &VarKey, _value: Value) -> Result<(), Self::E> {
-        Ok(())
-    }
-
-    fn get_var_value(&self, _key: &VarKey) -> Result<Value, Self::E> {
-        Ok(Value::Unit)
-    }
-
-    fn get_op_func(&self, _key: &OpKey) -> Result<OpFn<Self>, Self::E> {
-        Ok(OpFn::new(|_, _, _| Ok(Value::Unit)))
-    }
 }
 fn script_parser() -> ScriptParser {
     let ws_parser = DefaultWhiteSpaceParser::new();

@@ -1,6 +1,8 @@
 use std::marker::PhantomData;
+use crate::error::Error;
 
 use crate::runtime::Runtime;
+use crate::symbols::symbol_table::SymbolTable;
 use crate::trees::op::{NonIdOp, Op};
 use crate::trees::props::Typed;
 use crate::trees::tree::Tree;
@@ -26,7 +28,10 @@ impl<R: Runtime> Executor<R> for SimpleExecutor<R> {
     fn execute(&self, tree: &Tree<Typed>, runtime: &mut R, symbols: &mut R::S)
         -> Result<Value, R::E> {
         match tree {
-            Tree::Var(var) => { runtime.get_var_value(&var.tag.key) }
+            Tree::Var(var) => {
+                Ok(symbols.read_var(&var.tag.key).cloned()
+                    .ok_or_else(|| Error::from("Invalid internal variable reference."))?)
+            }
             Tree::Literal(value) => { Ok(value.clone()) }
             Tree::Op(op) => {
                 let mut values = Vec::with_capacity(op.kids.len());
@@ -50,7 +55,11 @@ impl<R: Runtime> Executor<R> for SimpleExecutor<R> {
                             }
                         }
                         Op::Id(id_op) => {
-                            runtime.apply_func(id_op.key(), &values, symbols)
+                            let func = symbols.read_fun(id_op.key())
+                                .ok_or_else(||
+                                    Error::from("Invalid internal function reference.")
+                                )?;
+                            func(&values, runtime, symbols)
                         }
                     }
                 }
