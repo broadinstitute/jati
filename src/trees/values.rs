@@ -12,7 +12,6 @@ pub enum Value {
     Char(char),
     Bool(bool),
     Unit,
-    Never,
     Symbolic(Arc<Tree<Typed>>),
 }
 
@@ -25,7 +24,6 @@ impl Value {
             Value::Char(_) => Type::Char,
             Value::Bool(_) => Type::Bool,
             Value::Unit => Type::Unit,
-            Value::Never => Type::Never,
             Value::Symbolic(_) => Type::Symbolic
         }
     }
@@ -40,7 +38,6 @@ impl Display for Value {
             Value::Char(char) => { write!(f, "{char}") }
             Value::Bool(bool) => { write!(f, "{bool}") }
             Value::Unit => { write!(f, "()") }
-            Value::Never => { write!(f, "!") }
             Value::Symbolic(tree) => { write!(f, "{tree}") }
         }
     }

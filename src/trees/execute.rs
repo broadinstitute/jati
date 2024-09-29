@@ -40,7 +40,7 @@ impl<R: Runtime> Executor<R> for SimpleExecutor<R> {
                     if runtime.stop_requested() { break; }
                 }
                 if runtime.stop_requested() {
-                    Ok(Value::Never)
+                    Ok(Value::Unit)
                 } else {
                     match &op.op {
                         Op::NonId(non_id_op) => {
