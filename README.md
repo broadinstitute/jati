@@ -1,2 +1,2 @@
 # jati
-DSL support library based on nom.
+DSL support library for Rust.

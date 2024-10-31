@@ -1,9 +1,7 @@
+use crate::error::ErrorKind;
 use std::cmp::Ordering;
 use std::collections::BTreeMap;
-use std::error::Error;
 use std::fmt::{Debug, Display, Formatter};
-use nom::error::{ContextError, ErrorKind, FromExternalError, ParseError};
-use crate::parse::Span;
 
 #[derive(Copy, Clone, Eq, PartialEq)]
 struct Pos {
@@ -20,42 +18,18 @@ impl Ord for Pos {
     fn cmp(&self, other: &Self) -> Ordering { self.i_byte.cmp(&other.i_byte) }
 }
 
-impl<'a> From<Span<'a>> for Pos {
-    fn from(span: Span<'a>) -> Self {
-        let i_byte = span.location_offset();
-        let i_col = span.get_utf8_column();
-        let i_line = span.location_line();
-        Pos { i_byte, i_col, i_line }
-    }
-}
-
 enum PathPartKind {
     Char(char),
     Kind(ErrorKind),
-    KindPlus(ErrorKind, String),
     Context(String),
-    Or,
 }
 
 impl PathPartKind {
     fn get_string(&self) -> String {
         match self {
             PathPartKind::Char(c) => { String::from(*c) }
-            PathPartKind::Kind(kind) => { String::from(kind.description()) }
-            PathPartKind::KindPlus(kind, message) => {
-                format!("{}: {}", kind.description(), message)
-            }
+            PathPartKind::Kind(kind) => { kind.to_string() }
             PathPartKind::Context(string) => { string.clone() }
-            PathPartKind::Or => { String::from("Or") }
-        }
-    }
-    fn priority(&self) -> u8 {
-        match self {
-            PathPartKind::Char(_) => { 1 }
-            PathPartKind::Kind(_) => { 2 }
-            PathPartKind::KindPlus(_, _) => { 3 }
-            PathPartKind::Context(_) => { 4 }
-            PathPartKind::Or => { 0 }
         }
     }
 }
@@ -130,36 +104,10 @@ impl LabelsByLine {
 }
 
 impl PathNode {
-    fn new(kind: PathPartKind, pos: Pos, children: Vec<PathNode>) -> Self {
-        PathNode { kind, pos, children }
-    }
-    fn new_leaf(kind: PathPartKind, pos: Pos) -> Self {
-        let children: Vec<PathNode> = Vec::new();
-        PathNode { kind, pos, children }
-    }
     fn get_label(&self) -> Label {
         let i_col = self.pos.i_col;
         let description = self.kind.get_string();
         Label::new(i_col, description)
-    }
-    fn pruned(self) -> PathNode {
-        let PathNode { kind, pos, children } = self;
-        let children_pruned: Vec<PathNode> =
-            children.into_iter().map(|child| { child.pruned() }).collect();
-        if children_pruned.len() > 1 {
-            PathNode { kind, pos, children: children_pruned }
-        } else {
-            match children_pruned.into_iter().next() {
-                None => { PathNode { kind, pos, children: Vec::new() } }
-                Some(child) => {
-                    if pos == child.pos && child.kind.priority() >= kind.priority() {
-                        child
-                    } else {
-                        PathNode { kind, pos, children: child.children }
-                    }
-                }
-            }
-        }
     }
     fn get_labels(&self) -> LabelsByLine {
         let mut labels = LabelsByLine::new();
@@ -179,28 +127,6 @@ pub struct PError {
 }
 
 impl PError {
-    fn new(lines: Lines, node: PathNode) -> Self { PError { lines, node } }
-    fn from_node(i_line: u32, line: String, node: PathNode) -> Self {
-        let mut lines = Lines::new();
-        lines.insert(i_line, line);
-        Self::new(lines, node.pruned())
-    }
-    fn from_path_kind(input: Span, kind: PathPartKind) -> Self {
-        let line = get_line(input);
-        let pos = Pos::from(input);
-        let i_line = pos.i_line;
-        let node = PathNode::new_leaf(kind, pos);
-        PError::from_node(i_line, line, node.pruned())
-    }
-    fn append_node(input: Span, kind: PathPartKind, other: Self) -> Self {
-        let PError { lines: mut other_lines, node: other_paths } = other;
-        let pos = Pos::from(input);
-        let i_line = pos.i_line;
-        other_lines.entry(i_line).or_insert_with(|| { get_line(input) });
-        let lines = other_lines;
-        let node = PathNode::new(kind, pos, vec!(other_paths));
-        PError::new(lines, node.pruned())
-    }
     fn get_labels(&self) -> LabelsByLine {
         let mut labels = LabelsByLine::new();
         labels.append(self.node.get_labels());
@@ -260,59 +186,6 @@ impl PError {
             }
         }
         report
-    }
-}
-
-fn get_line(span: Span) -> String {
-    String::from_utf8_lossy(span.get_line_beginning()).to_string()
-}
-
-impl<'a> ParseError<Span<'a>> for PError {
-    fn from_error_kind(input: Span<'a>, kind: ErrorKind) -> Self {
-        let kind = PathPartKind::from(kind);
-        PError::from_path_kind(input, kind)
-    }
-
-    fn append(input: Span<'a>, kind: ErrorKind, other: Self) -> Self {
-        let kind = PathPartKind::from(kind);
-        PError::append_node(input, kind, other)
-    }
-
-    fn from_char(input: Span<'a>, c: char) -> Self {
-        let kind = PathPartKind::from(c);
-        PError::from_path_kind(input, kind)
-    }
-
-    fn or(self, other: Self) -> Self {
-        let PError { lines: mut lines_self, node: mut node_self } = self;
-        let PError { lines: lines_other, node: node_other } = other;
-        for (i_line, line) in lines_other {
-            lines_self.insert(i_line, line);
-        }
-        let lines = lines_self;
-        let node =
-            if let PathPartKind::Or = node_self.kind {
-                node_self.children.push(node_other);
-                node_self
-            } else {
-                PathNode::new(PathPartKind::Or, node_self.pos,
-                              vec![node_self, node_other])
-            };
-        PError::new(lines, node.pruned())
-    }
-}
-
-impl<'a> ContextError<Span<'a>> for PError {
-    fn add_context(input: Span<'a>, ctx: &'static str, other: Self) -> Self {
-        let kind = PathPartKind::from(ctx);
-        PError::append_node(input, kind, other)
-    }
-}
-
-impl<'a, E: Error> FromExternalError<Span<'a>, E> for PError {
-    fn from_external_error(input: Span<'a>, kind: ErrorKind, error: E) -> Self {
-        let kind = PathPartKind::KindPlus(kind, error.to_string());
-        PError::from_path_kind(input, kind)
     }
 }
 

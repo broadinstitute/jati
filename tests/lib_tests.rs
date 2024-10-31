@@ -1,7 +1,5 @@
 use jati::error::Error;
-use jati::parse::parsers::id::RustIdParser;
 use jati::parse::parsers::script::ScriptParser;
-use jati::parse::parsers::white::DefaultWhiteSpaceParser;
 use jati::parse_string;
 use jati::runtime::Runtime;
 use jati::symbols::id::Id;
@@ -21,9 +19,7 @@ impl Runtime for TestRuntime {
     fn stop_requested(&self) -> bool { false }
 }
 fn script_parser() -> ScriptParser {
-    let ws_parser = DefaultWhiteSpaceParser::new();
-    let id_parser = RustIdParser::new();
-    ScriptParser::new(ws_parser, id_parser)
+    todo!()
 }
 
 #[test]
