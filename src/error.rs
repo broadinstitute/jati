@@ -2,7 +2,7 @@ use std::fmt::{Debug, Display, Formatter};
 use crate::parse::error::PError;
 use crate::trees::symbols::SymbolError;
 
-pub enum ErrorKind { Parse, Tree, Symbol }
+pub enum ErrorKind { Parse, Tree, Symbol, IO }
 pub enum Error {
     Root { message: String },
     Child { message: String, source: Box<Error> },
@@ -14,7 +14,8 @@ impl ErrorKind {
         match self {
             ErrorKind::Parse => "Parse",
             ErrorKind::Tree => "Tree",
-            ErrorKind::Symbol => "Symbol"
+            ErrorKind::Symbol => "Symbol",
+            ErrorKind::IO => "IO"
         }
     }
 }
@@ -74,6 +75,12 @@ impl From<PError> for Error {
 impl From<SymbolError> for Error {
     fn from(symbol_error: SymbolError) -> Self {
         import_error(ErrorKind::Symbol, symbol_error)
+    }
+}
+
+impl From<std::io::Error> for Error {
+    fn from(io_error: std::io::Error) -> Self {
+        import_error(ErrorKind::IO, io_error)
     }
 }
 

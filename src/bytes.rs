@@ -1,51 +1,58 @@
+use std::io::Read;
 use std::mem;
 use std::sync::{Arc, RwLock};
+use crate::error::Error;
+
+const BUFFER_SIZE: usize = 1024;
 
 #[derive(Clone)]
-pub struct Bytes<S: AsRef<[u8]>, I: Iterator<Item=S>> {
+pub struct Bytes<R: Read> {
     pos: usize,
-    buffer: Arc<ByteSlicables<S, I>>,
+    buffer: Arc<ByteSlicables<R>>,
 }
 
-struct ByteSlicables<S: AsRef<[u8]>, I: Iterator<Item=S>> {
-    slicable: S,
-    slicing_box: RwLock<ByteSlicingBox<S, I>>,
+struct ByteSlicables<R: Read> {
+    n_bytes: usize,
+    buffer: Vec<u8>,
+    slicing_box: RwLock<ByteSlicingBox<R>>,
 }
 
-enum ByteSlicing<S: AsRef<[u8]>, I: Iterator<Item=S>> {
-    Unsliced(I),
-    Sliced(Arc<ByteSlicables<S, I>>),
+enum ByteSlicing<R: Read> {
+    Unsliced(R),
+    Sliced(Arc<ByteSlicables<R>>),
     Empty,
 }
 
-struct ByteSlicingBox<S: AsRef<[u8]>, I: Iterator<Item=S>> {
-    slicing: ByteSlicing<S, I>,
+struct ByteSlicingBox<R: Read> {
+    slicing: ByteSlicing<R>,
 }
 
-impl<S: AsRef<[u8]>, I: Iterator<Item=S>> Bytes<S, I> {
-    pub fn new(mut slicables: I) -> Self {
-        let slicable = slicables.next().unwrap();
-        let slicing_box = RwLock::new(ByteSlicingBox::new(slicables));
-        let buffer = Arc::new(ByteSlicables { slicable, slicing_box });
-        Bytes { pos: 0, buffer }
+impl<R: Read> Bytes<R> {
+    pub fn new(mut read: R) -> Result<Self, Error> {
+        let mut buffer: Vec<u8> = vec![0; BUFFER_SIZE];
+        let n_bytes = read.read(&mut buffer)?;
+        let slicing_box = RwLock::new(ByteSlicingBox::new(read));
+        let buffer =
+            Arc::new(ByteSlicables { n_bytes, buffer, slicing_box });
+        Ok(Bytes { pos: 0, buffer })
     }
 }
 
-impl<S: AsRef<[u8]>, I: Iterator<Item=S>> Iterator for Bytes<S, I> {
-    type Item = u8;
+impl<R: Read> Iterator for Bytes<R> {
+    type Item = Result<u8, Error>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        let slice = self.buffer.slicable.as_ref();
-        if self.pos < slice.len() {
-            let byte = slice[self.pos];
+        if self.pos < self.buffer.n_bytes {
+            let byte = self.buffer.buffer[self.pos];
             self.pos += 1;
-            Some(byte)
+            Some(Ok(byte))
         } else {
             let next_slice =
                 self.buffer.slicing_box.write().unwrap().next_slicable();
             match next_slice {
-                None => None,
-                Some(slicable) => {
+                Err(err) => Some(Err(err)),
+                Ok(None) => None,
+                Ok(Some(slicable)) => {
                     self.buffer = slicable;
                     self.pos = 0;
                     self.next()
@@ -55,31 +62,33 @@ impl<S: AsRef<[u8]>, I: Iterator<Item=S>> Iterator for Bytes<S, I> {
     }
 }
 
-impl<S: AsRef<[u8]>, I: Iterator<Item=S>> ByteSlicingBox<S, I> {
-    fn new(iterator: I) -> Self {
+impl<R: Read> ByteSlicingBox<R> {
+    fn new(read: R) -> Self {
         ByteSlicingBox {
-            slicing: ByteSlicing::Unsliced(iterator),
+            slicing: ByteSlicing::Unsliced(read),
         }
     }
-    fn next_slicable(&mut self) -> Option<Arc<ByteSlicables<S, I>>> {
+    fn next_slicable(&mut self) -> Result<Option<Arc<ByteSlicables<R>>>, Error> {
         match &self.slicing {
             ByteSlicing::Unsliced(_) => {
-                let ByteSlicing::Unsliced(mut iterator) =
+                let ByteSlicing::Unsliced(mut read) =
                     mem::replace(&mut self.slicing, ByteSlicing::Empty) else { unreachable!() };
-                match iterator.next() {
-                    None => { None }
-                    Some(slice) => {
-                        let slicable = Arc::new(ByteSlicables {
-                            slicable: slice,
-                            slicing_box: RwLock::new(ByteSlicingBox::new(iterator)),
-                        });
-                        self.slicing = ByteSlicing::Sliced(slicable.clone());
-                        Some(slicable)
-                    }
+                let mut buffer: Vec<u8> = vec![0; BUFFER_SIZE];
+                let n_bytes = read.read(&mut buffer)?;
+                if n_bytes == 0 {
+                    Ok(None)
+                } else {
+                    let slicable = Arc::new(ByteSlicables {
+                        n_bytes,
+                        buffer,
+                        slicing_box: RwLock::new(ByteSlicingBox::new(read)),
+                    });
+                    self.slicing = ByteSlicing::Sliced(slicable.clone());
+                    Ok(Some(slicable))
                 }
             }
-            ByteSlicing::Sliced(slicables) => Some(slicables.clone()),
-            ByteSlicing::Empty => None,
+            ByteSlicing::Sliced(slicables) => Ok(Some(slicables.clone())),
+            ByteSlicing::Empty => Ok(None),
         }
     }
 }
