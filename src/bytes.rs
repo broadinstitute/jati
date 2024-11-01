@@ -1,7 +1,7 @@
+use crate::error::Error;
 use std::io::Read;
 use std::mem;
 use std::sync::{Arc, OnceLock, RwLock};
-use crate::error::Error;
 
 const BUFFER_SIZE: usize = 1024;
 
@@ -54,7 +54,7 @@ fn new_slice<'a, R: Read>(lock: OnceLock<Result<Option<Arc<BytesSlice<R>>>, Erro
     match value {
         Ok(None) => Ok(None),
         Ok(Some(slicable)) => Ok(Some(slicable.clone())),
-        Err(err) => Err(err.clone()),
+        Err(err) => Err(Error::from(format!("{}", err))),
     }
 }
 impl<R: Read> Iterator for Bytes<R> {
