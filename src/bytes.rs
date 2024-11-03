@@ -8,7 +8,7 @@ const BUFFER_SIZE: usize = 1024;
 #[derive(Clone)]
 pub struct Bytes<R: Read> {
     pos: usize,
-    buffer: Option<Arc<BytesSlice<R>>>,
+    buffer: Arc<BytesSlice<R>>,
 }
 
 struct BytesSlice<R: Read> {
@@ -32,13 +32,12 @@ impl<R: Read> Bytes<R> {
         let mut buffer: Vec<u8> = vec![0; BUFFER_SIZE];
         let n_bytes = read.read(&mut buffer)?;
         let next_slice = OnceLock::new();
-        let buffer =
-            Some(Arc::new(BytesSlice { n_bytes, buffer, next_slice }));
+        let buffer = Arc::new(BytesSlice { n_bytes, buffer, next_slice });
         Ok(Bytes { pos: 0, buffer })
     }
 }
 
-fn new_slice<'a, R: Read>(lock: OnceLock<Result<Option<Arc<BytesSlice<R>>>, Error>>, mut read: R)
+fn new_slice<'a, R: Read>(lock: &OnceLock<Result<Option<Arc<BytesSlice<R>>>, Error>>)
     -> Result<Option<Arc<BytesSlice<R>>>, Error> {
     let value = lock.get_or_init(|| {
         let mut buffer: Vec<u8> = vec![0; BUFFER_SIZE];
@@ -67,6 +66,7 @@ impl<R: Read> Iterator for Bytes<R> {
             Some(Ok(byte))
         } else {
             let next_slice =
+                new_slice(&self.buffer.next_slice, self.buffer.read());
                 self.buffer.next_slice.write().unwrap().next_slicable();
             match next_slice {
                 Err(err) => Some(Err(err)),
