@@ -2,7 +2,9 @@ use std::fmt::{Debug, Display, Formatter};
 use crate::parse::error::PError;
 use crate::trees::symbols::SymbolError;
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ErrorKind { Parse, Tree, Symbol, IO }
+
 pub enum Error {
     Root { message: String },
     Child { message: String, source: Box<Error> },
@@ -50,6 +52,28 @@ impl std::error::Error for Error {
             Error::Child { source, .. } => Some(source.as_ref()),
             Error::Imported { source, .. } => Some(source.as_ref()),
         }
+    }
+}
+
+impl Clone for Error {
+    fn clone(&self) -> Self {
+        match self {
+            Error::Root { message } => Error::Root { message: message.clone() },
+            Error::Child { message, source } =>
+                Error::Child { message: message.clone(), source: source.clone() },
+            Error::Imported { kind, source } =>
+                Error::Imported { kind: *kind, source: approximate_deep_clone(source.as_ref()) }
+        }
+    }
+}
+
+fn approximate_deep_clone(error: &dyn std::error::Error) -> Box<Error> {
+    match error.source() {
+        None => Box::new(Error::from(error.to_string())),
+        Some(source) => Box::new(Error::Child {
+            message: error.to_string(),
+            source: approximate_deep_clone(source)
+        })
     }
 }
 
