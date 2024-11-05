@@ -42,10 +42,7 @@ impl<R: Read> Iterator for Bytes<R> {
             self.pos += 1;
             Some(Ok(byte))
         } else {
-            let next_slice =
-                new_slice(&self.slices.slice_gen, self.slices.read());
-            self.slices.slice_gen.write().unwrap().next_slicable();
-            match next_slice {
+            match self.slices.slice_gen.write().unwrap().next_slicable() {
                 Err(err) => Some(Err(err)),
                 Ok(None) => None,
                 Ok(Some(slicable)) => {
@@ -82,26 +79,24 @@ impl<R: Read> ByteSlicingBox<R> {
                                 buffer,
                                 slice_gen: RwLock::new(ByteSlicingBox::new(read)),
                             });
-                            self.slicing = ByteSlicing::Sliced(slicable.clone());
+                            self.slicing = ByteSlicing::Sliced(Ok(Some(slicable.clone())));
                             Ok(Some(slicable))
                         }
                     }
-                    Err(err) => Err(Error::wrap("Failed to read".to_string(), err)),
-                }
-                if n_bytes == 0 {
-                    Ok(None)
-                } else {
-                    let slicable = Arc::new(BytesSlice {
-                        n_bytes,
-                        buffer,
-                        slice_gen: RwLock::new(ByteSlicingBox::new(read)),
-                    });
-                    self.slicing = ByteSlicing::Sliced(slicable.clone());
-                    Ok(Some(slicable))
+                    Err(err) => {
+                        let error = Error::from(err);
+                        self.slicing = ByteSlicing::Sliced(Err(error.clone()));
+                        Err(error)
+                    },
                 }
             }
-            ByteSlicing::Sliced(slicables) => Ok(Some(slicables.clone())),
-            ByteSlicing::Empty => Ok(None),
+            ByteSlicing::Sliced(slicables) => {
+                match slicables {
+                    Ok(None) => Ok(None),
+                    Ok(Some(slicable)) => Ok(Some(slicable.clone())),
+                    Err(err) => Err(err.clone()),
+                }
+            },
         }
     }
 }
