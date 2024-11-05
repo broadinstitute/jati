@@ -42,7 +42,11 @@ impl<R: Read> Iterator for Bytes<R> {
             self.pos += 1;
             Some(Ok(byte))
         } else {
-            match self.slices.slice_gen.write().unwrap().next_slicable() {
+            let slice_gen = &self.slices.slice_gen;
+            let next_slice =
+                slice_gen.read().unwrap().maybe_next_slicable()
+                    .unwrap_or_else(|| slice_gen.write().unwrap().next_slicable());
+            match next_slice {
                 Err(err) => Some(Err(err)),
                 Ok(None) => None,
                 Ok(Some(slicable)) => {
@@ -59,6 +63,19 @@ impl<R: Read> ByteSlicingBox<R> {
     fn new(read: R) -> Self {
         ByteSlicingBox {
             slicing: ByteSlicing::Unsliced(read),
+        }
+    }
+
+    fn maybe_next_slicable(&self) -> Option<Result<Option<Arc<BytesSlice<R>>>, Error>> {
+        match &self.slicing {
+            ByteSlicing::Unsliced(_) => None,
+            ByteSlicing::Sliced(slicables) => {
+                match slicables {
+                    Ok(None) => None,
+                    Ok(Some(slicable)) => Some(Ok(Some(slicable.clone()))),
+                    Err(err) => Some(Err(err.clone())),
+                }
+            },
         }
     }
     fn next_slicable(&mut self) -> Result<Option<Arc<BytesSlice<R>>>, Error> {
