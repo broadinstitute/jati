@@ -4,5 +4,5 @@ pub mod trees;
 pub mod symbols;
 mod util;
 pub mod runtime;
-mod bytes;
+pub mod bytes;
 

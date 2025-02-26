@@ -15,6 +15,6 @@ pub enum ParseResult<O> {
 }
 
 pub struct Failure {
-    actual: String,
-    expected: String,
+    pub actual: String,
+    pub expected: String,
 }
