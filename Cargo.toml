@@ -3,7 +3,7 @@ name = "jati"
 description = "DSL support library for Rust"
 version = "0.1.0"
 authors = ["Oliver Ruebenacker <oliverr@broadinstitute.org>"]
-edition = "2021"
+edition = "2024"
 readme = "README.md"
 repository = "https://github.com/broadinstitute/jati"
 license = "BSD-3-Clause"
@@ -11,4 +11,4 @@ license = "BSD-3-Clause"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-uuid = { version = "1.11.0", features = ["v4"] }
+uuid = { version = "1.15.1", features = ["v4"] }
