@@ -1,5 +1,6 @@
-pub trait IdParser {}
+pub struct IdParser {}
 
-pub struct RustIdParser {}
+impl IdParser {
+    pub fn new() -> IdParser { IdParser {} }
+}
 
-impl IdParser for RustIdParser {}
