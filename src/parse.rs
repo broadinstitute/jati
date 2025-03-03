@@ -1,11 +1,13 @@
 use crate::error::Error;
+use crate::input::Input;
 
 pub(crate) mod error;
 pub mod parsers;
 
 pub trait Parser {
     type Output;
-    fn parse<B: Iterator<Item=u8> + Clone>(bytes: B) -> ParseResult<Self::Output>;
+    fn parse<C: Iterator<Item=Result<char, Error>> + Clone, I: Into<Input<C>>>(input: I)
+        -> ParseResult<Self::Output>;
 }
 
 pub enum ParseResult<O> {
