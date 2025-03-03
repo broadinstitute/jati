@@ -5,4 +5,5 @@ pub mod symbols;
 mod util;
 pub mod runtime;
 pub mod bytes;
+pub mod utf8;
 
