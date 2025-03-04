@@ -1,3 +1,4 @@
+use std::fmt::Display;
 use std::mem;
 use crate::error::Error;
 
@@ -13,8 +14,12 @@ enum CharClass {
     Lf, Cr, Other
 }
 
+pub trait CharTap: Iterator<Item=Result<char, Error>> + Clone {}
+
+impl<T: Iterator<Item=Result<char, Error>> + Clone> CharTap for T {}
+
 #[derive(Clone)]
-pub struct Input<C: Iterator<Item=Result<char, Error>> + Clone> {
+pub struct Input<C: CharTap> {
     chars: C,
     last_pos: Option<Pos>,
     next_pos: Pos,
@@ -39,7 +44,13 @@ impl Default for Pos {
     }
 }
 
-impl<C: Iterator<Item=Result<char, Error>> + Clone> Input<C> {
+impl Display for Pos {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}:{}", self.line, self.column)
+    }
+}
+
+impl<C: CharTap> Input<C> {
     pub fn new(chars: C) -> Self {
         Input { chars, last_pos: None, next_pos: Pos::new(), last_char_class: CharClass::Other }
     }
@@ -48,7 +59,7 @@ impl<C: Iterator<Item=Result<char, Error>> + Clone> Input<C> {
     }
 }
 
-impl<C: Iterator<Item=Result<char, Error>> + Clone> Iterator for Input<C> {
+impl<C: CharTap> Iterator for Input<C> {
     type Item = Result<char, Error>;
 
     fn next(&mut self) -> Option<Self::Item> {

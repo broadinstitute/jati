@@ -7,4 +7,5 @@ pub mod runtime;
 pub mod bytes;
 pub mod utf8;
 pub mod input;
+mod char_pattern;
 
