@@ -26,7 +26,7 @@ impl Parser for CharParser {
                 }))
             }
             Some(c) => {
-                if self.char_pattern.includes(c) {
+                if self.char_pattern.includes(Some(c)) {
                     Ok(c)
                 } else {
                     let pos = input.last_pos().unwrap();

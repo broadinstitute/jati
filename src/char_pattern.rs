@@ -5,6 +5,7 @@ pub enum CharPattern {
     Char(char),
     Class(CharClass),
     Union(Vec<CharPattern>),
+    End
 }
 
 #[derive(Clone, Copy)]
@@ -31,12 +32,14 @@ impl Display for CharClass {
 }
 
 impl CharPattern {
-    pub fn includes(&self, c: char) -> bool {
-        match self {
-            CharPattern::Char(match_c) => c == *match_c,
-            CharPattern::Class(class) => class.includes(c),
-            CharPattern::Union(matches) =>
+    pub fn includes(&self, c: Option<char>) -> bool {
+        match (self, c) {
+            (CharPattern::Char(match_c), Some(c)) => c == *match_c,
+            (CharPattern::Class(class), Some(c)) => class.includes(c),
+            (CharPattern::Union(matches), _) =>
                 matches.iter().any(|m| m.includes(c)),
+            (CharPattern::End, None) => true,
+            _ => false,
         }
     }
     pub fn for_char(c: char) -> CharPattern { CharPattern::Char(c) }
@@ -85,6 +88,7 @@ impl Display for CharPattern {
                     }
                 }
             }
+            CharPattern::End => { write!(f, "end of input") }
         }
     }
 }

@@ -8,10 +8,56 @@ pub struct Pos {
     pub column: usize,
 }
 
+#[derive(Clone)]
+pub struct PosChar {
+    pub pos: Pos,
+    pub c: Option<char>,
+}
 
 #[derive(Clone)]
-enum CharClass {
-    Lf, Cr, Other
+enum LineState {
+    Lf1, Cr1, Lf2, Cr2, Other
+}
+
+struct LineStateNext {
+    state: LineState,
+    new_line: bool,
+}
+
+impl LineState {
+    fn new() -> Self { LineState::Other }
+    fn next(&mut self, c: Option<char>) -> LineStateNext {
+        match c {
+            Some(c) => {
+                match (self, c) {
+                    (LineState::Lf1, '\n') => LineStateNext { state: LineState::Lf1, new_line: true },
+                    (LineState::Lf1, '\r') => LineStateNext { state: LineState::Cr2, new_line: false },
+                    (LineState::Lf1, _) => LineStateNext { state: LineState::Other, new_line: true },
+                    (LineState::Cr1, '\n') => LineStateNext { state: LineState::Cr2, new_line: false },
+                    (LineState::Cr1, '\r') => LineStateNext { state: LineState::Cr1, new_line: true },
+                    (LineState::Cr1, _) => LineStateNext { state: LineState::Other, new_line: true },
+                    (LineState::Lf2, '\n') => LineStateNext { state: LineState::Lf1, new_line: true },
+                    (LineState::Lf2, '\r') => LineStateNext { state: LineState::Cr1, new_line: true },
+                    (LineState::Lf2, _) => LineStateNext { state: LineState::Other, new_line: true },
+                    (LineState::Cr2, '\n') => LineStateNext { state: LineState::Lf1, new_line: true },
+                    (LineState::Cr2, '\r') => LineStateNext { state: LineState::Cr1, new_line: true },
+                    (LineState::Cr2, _) => LineStateNext { state: LineState::Other, new_line: true },
+                    (LineState::Other, '\n') => LineStateNext { state: LineState::Lf1, new_line: false },
+                    (LineState::Other, '\r') => LineStateNext { state: LineState::Cr1, new_line: false },
+                    (LineState::Other, _) => LineStateNext { state: LineState::Other, new_line: false },
+                }
+            }
+            None => {
+                match self {
+                    LineState::Lf1 => LineStateNext { state: LineState::Other, new_line: true },
+                    LineState::Cr1 => LineStateNext { state: LineState::Other, new_line: true },
+                    LineState::Lf2 => LineStateNext { state: LineState::Other, new_line: true },
+                    LineState::Cr2 => LineStateNext { state: LineState::Other, new_line: true },
+                    LineState::Other => LineStateNext { state: LineState::Other, new_line: false },
+                }
+            }
+        }
+    }
 }
 
 pub trait CharTap: Iterator<Item=Result<char, Error>> + Clone {}
@@ -21,9 +67,8 @@ impl<T: Iterator<Item=Result<char, Error>> + Clone> CharTap for T {}
 #[derive(Clone)]
 pub struct Input<C: CharTap> {
     chars: C,
-    last_pos: Option<Pos>,
-    next_pos: Pos,
-    last_char_class: CharClass,
+    next_char_pos: Result<PosChar, Error>,
+    last_char_class: LineState,
 }
 
 impl Pos {
@@ -51,11 +96,10 @@ impl Display for Pos {
 }
 
 impl<C: CharTap> Input<C> {
-    pub fn new(chars: C) -> Self {
-        Input { chars, last_pos: None, next_pos: Pos::new(), last_char_class: CharClass::Other }
-    }
-    pub fn last_pos(&self) -> Option<Pos> {
-        self.last_pos
+    pub fn new(mut chars: C) -> Self {
+        let next_char_pos =
+            chars.next().transpose().map(|c| PosChar { pos: Pos::new(), c });
+        Input { chars, next_char_pos, last_char_class: LineState::Other }
     }
 }
 
@@ -69,11 +113,11 @@ impl<C: CharTap> Iterator for Input<C> {
             Some(Ok(c)) => {
                 let pos = self.next_pos;
                 self.next_pos = match (c, &self.last_char_class) {
-                    ('\n', CharClass::Cr) => { self.last_char_class = CharClass::Lf; pos }
-                    ('\n', _) => { self.last_char_class = CharClass::Lf; pos.newline() }
-                    ('\r', CharClass::Lf) => { self.last_char_class = CharClass::Cr; pos }
-                    ('\r', _) => { self.last_char_class = CharClass::Cr; pos.newline() }
-                    (_, _) => { self.last_char_class = CharClass::Other; pos.next() }
+                    ('\n', LineState::Cr) => { self.last_char_class = LineState::Lf; pos }
+                    ('\n', _) => { self.last_char_class = LineState::Lf; pos.newline() }
+                    ('\r', LineState::Lf) => { self.last_char_class = LineState::Cr; pos }
+                    ('\r', _) => { self.last_char_class = LineState::Cr; pos.newline() }
+                    (_, _) => { self.last_char_class = LineState::Other; pos.next() }
                 };
                 self.last_pos = Some(mem::replace(&mut self.next_pos, pos));
                 Some(Ok(c))
