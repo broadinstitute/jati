@@ -1,6 +1,5 @@
-use std::fmt::Display;
-use std::mem;
 use crate::error::Error;
+use std::fmt::Display;
 
 #[derive(Clone, Copy, Debug)]
 pub struct Pos {
@@ -11,49 +10,55 @@ pub struct Pos {
 #[derive(Clone)]
 pub struct PosChar {
     pub pos: Pos,
-    pub c: Option<char>,
+    pub char_opt: Option<char>,
 }
 
 #[derive(Clone)]
-enum LineState {
+enum LineEndState {
     Lf1, Cr1, Lf2, Cr2, Other
 }
 
+#[derive(Clone)]
+struct PosTracker {
+    pos: Pos,
+    line_end: LineEndState,
+}
+
 struct LineStateNext {
-    state: LineState,
+    state: LineEndState,
     new_line: bool,
 }
 
-impl LineState {
-    fn new() -> Self { LineState::Other }
-    fn next(&mut self, c: Option<char>) -> LineStateNext {
+impl LineEndState {
+    fn new() -> Self { LineEndState::Other }
+    fn next(&mut self, c: &Option<char>) -> LineStateNext {
         match c {
             Some(c) => {
                 match (self, c) {
-                    (LineState::Lf1, '\n') => LineStateNext { state: LineState::Lf1, new_line: true },
-                    (LineState::Lf1, '\r') => LineStateNext { state: LineState::Cr2, new_line: false },
-                    (LineState::Lf1, _) => LineStateNext { state: LineState::Other, new_line: true },
-                    (LineState::Cr1, '\n') => LineStateNext { state: LineState::Cr2, new_line: false },
-                    (LineState::Cr1, '\r') => LineStateNext { state: LineState::Cr1, new_line: true },
-                    (LineState::Cr1, _) => LineStateNext { state: LineState::Other, new_line: true },
-                    (LineState::Lf2, '\n') => LineStateNext { state: LineState::Lf1, new_line: true },
-                    (LineState::Lf2, '\r') => LineStateNext { state: LineState::Cr1, new_line: true },
-                    (LineState::Lf2, _) => LineStateNext { state: LineState::Other, new_line: true },
-                    (LineState::Cr2, '\n') => LineStateNext { state: LineState::Lf1, new_line: true },
-                    (LineState::Cr2, '\r') => LineStateNext { state: LineState::Cr1, new_line: true },
-                    (LineState::Cr2, _) => LineStateNext { state: LineState::Other, new_line: true },
-                    (LineState::Other, '\n') => LineStateNext { state: LineState::Lf1, new_line: false },
-                    (LineState::Other, '\r') => LineStateNext { state: LineState::Cr1, new_line: false },
-                    (LineState::Other, _) => LineStateNext { state: LineState::Other, new_line: false },
+                    (LineEndState::Lf1, '\n') => LineStateNext { state: LineEndState::Lf1, new_line: true },
+                    (LineEndState::Lf1, '\r') => LineStateNext { state: LineEndState::Cr2, new_line: false },
+                    (LineEndState::Lf1, _) => LineStateNext { state: LineEndState::Other, new_line: true },
+                    (LineEndState::Cr1, '\n') => LineStateNext { state: LineEndState::Lf2, new_line: false },
+                    (LineEndState::Cr1, '\r') => LineStateNext { state: LineEndState::Cr1, new_line: true },
+                    (LineEndState::Cr1, _) => LineStateNext { state: LineEndState::Other, new_line: true },
+                    (LineEndState::Lf2, '\n') => LineStateNext { state: LineEndState::Lf1, new_line: true },
+                    (LineEndState::Lf2, '\r') => LineStateNext { state: LineEndState::Cr1, new_line: true },
+                    (LineEndState::Lf2, _) => LineStateNext { state: LineEndState::Other, new_line: true },
+                    (LineEndState::Cr2, '\n') => LineStateNext { state: LineEndState::Lf1, new_line: true },
+                    (LineEndState::Cr2, '\r') => LineStateNext { state: LineEndState::Cr1, new_line: true },
+                    (LineEndState::Cr2, _) => LineStateNext { state: LineEndState::Other, new_line: true },
+                    (LineEndState::Other, '\n') => LineStateNext { state: LineEndState::Lf1, new_line: false },
+                    (LineEndState::Other, '\r') => LineStateNext { state: LineEndState::Cr1, new_line: false },
+                    (LineEndState::Other, _) => LineStateNext { state: LineEndState::Other, new_line: false },
                 }
             }
             None => {
                 match self {
-                    LineState::Lf1 => LineStateNext { state: LineState::Other, new_line: true },
-                    LineState::Cr1 => LineStateNext { state: LineState::Other, new_line: true },
-                    LineState::Lf2 => LineStateNext { state: LineState::Other, new_line: true },
-                    LineState::Cr2 => LineStateNext { state: LineState::Other, new_line: true },
-                    LineState::Other => LineStateNext { state: LineState::Other, new_line: false },
+                    LineEndState::Lf1 => LineStateNext { state: LineEndState::Other, new_line: true },
+                    LineEndState::Cr1 => LineStateNext { state: LineEndState::Other, new_line: true },
+                    LineEndState::Lf2 => LineStateNext { state: LineEndState::Other, new_line: true },
+                    LineEndState::Cr2 => LineStateNext { state: LineEndState::Other, new_line: true },
+                    LineEndState::Other => LineStateNext { state: LineEndState::Other, new_line: false },
                 }
             }
         }
@@ -64,16 +69,16 @@ pub trait CharTap: Iterator<Item=Result<char, Error>> + Clone {}
 
 impl<T: Iterator<Item=Result<char, Error>> + Clone> CharTap for T {}
 
+
 #[derive(Clone)]
 pub struct Input<C: CharTap> {
     chars: C,
-    next_char_pos: Result<PosChar, Error>,
-    last_char_class: LineState,
+    pos_tracker: PosTracker,
 }
 
 impl Pos {
     pub fn new() -> Self {
-        Pos { line: 1, column: 1 }
+        Pos { line: 1, column: 0 }
     }
     pub fn next(&self) -> Self {
         Pos { line: self.line, column: self.column + 1 }
@@ -94,12 +99,27 @@ impl Display for Pos {
         write!(f, "{}:{}", self.line, self.column)
     }
 }
+impl PosTracker {
+    pub(crate) fn new() -> Self {
+        PosTracker { pos: Pos::new(), line_end: LineEndState::new() }
+    }
+    pub(crate) fn next(&mut self, c: &Option<char>) -> PosTracker {
+        let LineStateNext { state, new_line } = self.line_end.next(c);
+        let pos = if new_line {
+            self.pos.newline()
+        } else {
+            self.pos.next()
+        };
+        PosTracker { pos, line_end: state }
+    }
+}
 
 impl<C: CharTap> Input<C> {
-    pub fn new(mut chars: C) -> Self {
-        let next_char_pos =
-            chars.next().transpose().map(|c| PosChar { pos: Pos::new(), c });
-        Input { chars, next_char_pos, last_char_class: LineState::Other }
+    pub fn new(chars: C) -> Self {
+        Input { chars, pos_tracker: PosTracker::new() }
+    }
+    pub fn last_pos(&self) -> Pos {
+        self.pos_tracker.pos
     }
 }
 
@@ -107,21 +127,12 @@ impl<C: CharTap> Iterator for Input<C> {
     type Item = Result<char, Error>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        match self.chars.next() {
-            None => None,
-            Some(Err(err)) => Some(Err(err)),
-            Some(Ok(c)) => {
-                let pos = self.next_pos;
-                self.next_pos = match (c, &self.last_char_class) {
-                    ('\n', LineState::Cr) => { self.last_char_class = LineState::Lf; pos }
-                    ('\n', _) => { self.last_char_class = LineState::Lf; pos.newline() }
-                    ('\r', LineState::Lf) => { self.last_char_class = LineState::Cr; pos }
-                    ('\r', _) => { self.last_char_class = LineState::Cr; pos.newline() }
-                    (_, _) => { self.last_char_class = LineState::Other; pos.next() }
-                };
-                self.last_pos = Some(mem::replace(&mut self.next_pos, pos));
-                Some(Ok(c))
+        match self.chars.next().transpose() {
+            Ok(c) => {
+                self.pos_tracker = self.pos_tracker.next(&c);
+                c.map(Ok)
             }
+            Err(error) => { Some(Err(error)) }
         }
     }
 }

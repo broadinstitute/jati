@@ -18,7 +18,7 @@ impl Parser for CharParser {
     fn parse<C: CharTap>(&self, input: &mut Input<C>) -> Result<Self::Output, ParseIssue> {
         match input.next().transpose()? {
             None => {
-                let pos = input.last_pos().unwrap();
+                let pos = input.last_pos();
                 Err(ParseIssue::Failure(Failure {
                     pos,
                     actual: None,
@@ -29,7 +29,7 @@ impl Parser for CharParser {
                 if self.char_pattern.includes(Some(c)) {
                     Ok(c)
                 } else {
-                    let pos = input.last_pos().unwrap();
+                    let pos = input.last_pos();
                     Err(ParseIssue::Failure(Failure {
                         pos,
                         actual: Some(c),
