@@ -6,9 +6,14 @@ use std::fmt::{Display, Formatter};
 pub(crate) mod error;
 pub mod parsers;
 
+pub struct Success<C: CharTap, O> {
+    output: O,
+    input: Input<C>
+}
 pub trait Parser {
     type Output;
-    fn parse<C: CharTap>(&self, input: &mut Input<C>) -> Result<Self::Output, ParseIssue>;
+    fn parse<C: CharTap>(&self, input: &Input<C>)
+        -> Result<Success<C, Self::Output>, ParseIssue>;
 }
 
 pub enum ParseIssue {

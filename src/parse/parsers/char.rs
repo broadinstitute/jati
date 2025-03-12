@@ -1,6 +1,6 @@
 use crate::char_pattern::CharPattern;
 use crate::input::{CharTap, Input};
-use crate::parse::{Failure, ParseIssue, Parser};
+use crate::parse::{ParseIssue, Parser, Success};
 
 pub struct CharParser {
     char_pattern: CharPattern
@@ -13,31 +13,12 @@ impl CharParser {
 }
 
 impl Parser for CharParser {
-    type Output = char;
+    type Output = Option<char>;
 
-    fn parse<C: CharTap>(&self, input: &mut Input<C>) -> Result<Self::Output, ParseIssue> {
-        match input.next().transpose()? {
-            None => {
-                let pos = input.last_pos();
-                Err(ParseIssue::Failure(Failure {
-                    pos,
-                    actual: None,
-                    expected: Some(self.char_pattern.clone()),
-                }))
-            }
-            Some(c) => {
-                if self.char_pattern.includes(Some(c)) {
-                    Ok(c)
-                } else {
-                    let pos = input.last_pos();
-                    Err(ParseIssue::Failure(Failure {
-                        pos,
-                        actual: Some(c),
-                        expected: Some(self.char_pattern.clone()),
-                    }))
-                }
-            }
-        }
+    fn parse<C: CharTap>(&self, input: &Input<C>) -> Result<Success<C, Self::Output>, ParseIssue> {
+        let next = input.the_next()?;
+        let c = next.match_with(&self.char_pattern)?;
+        Ok(Success { output: c, input: next.input })
     }
 }
 
