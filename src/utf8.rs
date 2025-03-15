@@ -14,7 +14,7 @@ impl<B: Iterator<Item=Result<u8, Error>> + Clone> Utf8Chars<B> {
         match byte1 {
             None => { Ok(None) }
             Some(byte1) => {
-                if byte1 & 0b1000_0000 == 0b1000_0000 {
+                if byte1 & 0b1000_0000 == 0b0000_0000 {
                     Ok(Some(byte1 as char))
                 } else if byte1 & 0b1110_0000 == 0b1100_0000 {
                     let bits1 = (byte1 & 0b0001_1111) as u32;
@@ -58,5 +58,27 @@ impl<B: Iterator<Item=Result<u8, Error>> + Clone> Iterator for Utf8Chars<B> {
 
     fn next(&mut self) -> Option<Self::Item> {
         self.try_char().transpose()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn can_decode_valid_utf8() {
+        assert_round_trip("");
+        assert_round_trip("  ");
+        assert_round_trip("\t\n\r");
+        assert_round_trip("Hello, world!");
+        assert_round_trip("السلام عليكم");
+        assert_round_trip("Görüşürüz!");
+        assert_round_trip("很高兴见到你!");
+    }
+
+    fn assert_round_trip(string: &str) {
+        let bytes = string.bytes().map(Ok);
+        let utf8_chars = Utf8Chars::new(bytes);
+        let decoded: String = utf8_chars.map(Result::unwrap).collect();
+        assert_eq!(string, decoded);
     }
 }
