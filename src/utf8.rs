@@ -70,9 +70,9 @@ mod tests {
         assert_round_trip("  ");
         assert_round_trip("\t\n\r");
         assert_round_trip("Hello, world!");
-        assert_round_trip("السلام عليكم");
         assert_round_trip("Görüşürüz!");
         assert_round_trip("很高兴见到你!");
+        assert_round_trip("🦃😨💒👒💍™️🙉");
     }
 
     fn assert_round_trip(string: &str) {
@@ -80,5 +80,23 @@ mod tests {
         let utf8_chars = Utf8Chars::new(bytes);
         let decoded: String = utf8_chars.map(Result::unwrap).collect();
         assert_eq!(string, decoded);
+    }
+    #[test]
+    fn handle_invalid_utf8() {
+        assert_error(&[0b1000_0000], "Invalid UTF-8 lead byte '80'.");
+        assert_error(&[0b1100_0000], "Input ended before UTF-8 complete.");
+        // assert_error(&[0b1100_0000, 0b1000_0000], "Invalid UTF-8 continuation byte '80'.");
+        // assert_error(&[0b1110_0000], "Input ended before UTF-8 complete.");
+        // assert_error(&[0b1110_0000, 0b1000_0000], "Input ended before UTF-8 complete.");
+        // assert_error(&[0b1110_0000, 0b1000_0000, 0b1000_0000], "Invalid UTF-8 continuation byte '80'.");
+        // assert_error(&[0b1111_0000], "Input ended before UTF-8 complete.");
+        // assert_error(&[0b1111_0000, 0b1000_0000], "Input ended before UTF-8 complete.");
+        // assert_error(&[0b1111_0000, 0b1000_0000, 0b1000_0000], "Input ended before UTF-8 complete.");
+        // assert_error(&[0b1111_0000, 0b1000_0000, 0b1000_0000, 0b1000_0000], "Input ended before UTF-8 complete.");
+    }
+    fn assert_error(bytes: &[u8], expected_error: &str) {
+        let utf8_chars = Utf8Chars::new(bytes.iter().copied().map(Ok));
+        let error = utf8_chars.map(Result::unwrap_err).next().unwrap();
+        assert_eq!(expected_error, error.to_string());
     }
 }
