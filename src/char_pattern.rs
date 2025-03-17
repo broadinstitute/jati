@@ -4,8 +4,8 @@ use std::fmt::{Display, Formatter};
 pub enum CharPattern {
     Char(char),
     Class(CharClass),
+    End,
     Union(Vec<CharPattern>),
-    End
 }
 
 #[derive(Clone, Copy)]
@@ -36,9 +36,9 @@ impl CharPattern {
         match (self, c) {
             (CharPattern::Char(match_c), Some(c)) => c == *match_c,
             (CharPattern::Class(class), Some(c)) => class.includes(c),
+            (CharPattern::End, None) => true,
             (CharPattern::Union(matches), _) =>
                 matches.iter().any(|m| m.includes(c)),
-            (CharPattern::End, None) => true,
             _ => false,
         }
     }

@@ -2,6 +2,7 @@ use crate::char_pattern::CharPattern;
 use crate::error::Error;
 use crate::parse::Failure;
 use std::fmt::Display;
+use std::iter::Map;
 
 #[derive(Clone, Copy, Debug)]
 pub struct Pos {
@@ -219,5 +220,11 @@ impl<C: CharTap> Next<C> {
                 expected: Some(char_pattern.clone()),
             })
         }
+    }
+}
+
+impl<I: Iterator<Item=char> + Clone> From<I> for Input<Map<I, fn(char) -> Result<char, Error>>> {
+    fn from(chars: I) -> Self {
+        Input::new(chars.map(Ok))
     }
 }
