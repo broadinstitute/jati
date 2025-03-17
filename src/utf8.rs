@@ -83,16 +83,35 @@ mod tests {
     }
     #[test]
     fn handle_invalid_utf8() {
-        assert_error(&[0b1000_0000], "Invalid UTF-8 lead byte '80'.");
-        assert_error(&[0b1100_0000], "Input ended before UTF-8 complete.");
-        // assert_error(&[0b1100_0000, 0b1000_0000], "Invalid UTF-8 continuation byte '80'.");
-        // assert_error(&[0b1110_0000], "Input ended before UTF-8 complete.");
-        // assert_error(&[0b1110_0000, 0b1000_0000], "Input ended before UTF-8 complete.");
-        // assert_error(&[0b1110_0000, 0b1000_0000, 0b1000_0000], "Invalid UTF-8 continuation byte '80'.");
-        // assert_error(&[0b1111_0000], "Input ended before UTF-8 complete.");
-        // assert_error(&[0b1111_0000, 0b1000_0000], "Input ended before UTF-8 complete.");
-        // assert_error(&[0b1111_0000, 0b1000_0000, 0b1000_0000], "Input ended before UTF-8 complete.");
-        // assert_error(&[0b1111_0000, 0b1000_0000, 0b1000_0000, 0b1000_0000], "Input ended before UTF-8 complete.");
+        const ASCII: u8 = 0b0001_0111;
+        const CONTI: u8 = 0b1000_0111;
+        const LEAD2: u8 = 0b1100_0111;
+        const LEAD3: u8 = 0b1110_0111;
+        const LEAD4: u8 = 0b1111_0111;
+        assert_error(&[CONTI], "Invalid UTF-8 lead byte '87'.");
+        assert_error(&[LEAD2], "Input ended before UTF-8 complete.");
+        for lead in [LEAD2, LEAD3, LEAD4].iter() {
+            assert_error(&[*lead], "Input ended before UTF-8 complete.");
+            for non_conti in [ASCII, LEAD2, LEAD3, LEAD4].iter() {
+                assert_error(&[*lead, *non_conti],
+                             &format!("Invalid UTF-8 continuation byte '{:x}'.",
+                                      non_conti));
+            }
+        }
+        for lead in [LEAD3, LEAD4].iter() {
+            assert_error(&[*lead, CONTI], "Input ended before UTF-8 complete.");
+            for non_conti in [ASCII, LEAD2, LEAD3, LEAD4].iter() {
+                assert_error(&[*lead, CONTI, *non_conti],
+                             &format!("Invalid UTF-8 continuation byte '{:x}'.",
+                                      non_conti));
+            }
+        }
+        assert_error(&[LEAD4, CONTI, CONTI], "Input ended before UTF-8 complete.");
+        for non_conti in [ASCII, LEAD2, LEAD3, LEAD4].iter() {
+            assert_error(&[LEAD4, CONTI, CONTI, *non_conti],
+                         &format!("Invalid UTF-8 continuation byte '{:x}'.",
+                                  non_conti));
+        }
     }
     fn assert_error(bytes: &[u8], expected_error: &str) {
         let utf8_chars = Utf8Chars::new(bytes.iter().copied().map(Ok));
