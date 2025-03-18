@@ -31,22 +31,44 @@ mod tests {
 
     #[test]
     fn test_char_parser() {
-        let input = Input::from("a");
-        let parser = CharParser::new(CharPattern::for_class(CharClass::Alphabetic));
+        assert_parse(CharPattern::End, "", None);
+        assert_parse(CharPattern::for_class(CharClass::Alphabetic), "a", Some('a'));
+        assert_parse(CharPattern::for_class(CharClass::Alphanumeric), "a", Some('a'));
+        assert_parse(CharPattern::for_class(CharClass::Alphanumeric), "1", Some('1'));
+        assert_parse(CharPattern::for_char('='), "=", Some('='));
+        let union =
+            CharPattern::for_class(CharClass::Alphabetic).union(CharPattern::for_char('='));
+        assert_parse(union.clone(), "=", Some('='));
+        assert_parse(union, "=", Some('='));
+    }
+
+    fn assert_parse(char_pattern: CharPattern, string: &str, output: Option<char>) {
+        let input = Input::from(string);
+        let parser = CharParser::new(char_pattern);
         let result = parser.parse(&input);
-        assert_eq!(result.unwrap().output, Some('a'));
+        assert_eq!(result.unwrap().output, output);
     }
 
     #[test]
     fn test_char_parser_fail() {
-        let input = Input::from("1");
-        let parser = CharParser::new(CharPattern::for_class(CharClass::Alphabetic));
+        assert_failure(CharPattern::End, "1", Some('1'));
+        assert_failure(CharPattern::for_class(CharClass::Alphabetic), "", None);
+        assert_failure(CharPattern::for_class(CharClass::Alphabetic), "1", Some('1'));
+        let union =
+            CharPattern::for_class(CharClass::Alphabetic).union(CharPattern::for_char('='));
+        assert_failure(union.clone(), "1", Some('1'));
+        assert_failure(union, "+", Some('+'));
+    }
+
+    fn assert_failure(char_pattern: CharPattern, string: &str, actual: Option<char>) {
+        let input = Input::from(string);
+        let parser = CharParser::new(char_pattern);
         let result = parser.parse(&input);
         match result {
             Ok(_) => panic!("Expected failure."),
             Err(ParseIssue::Failure(failure)) => {
-                assert_eq!(failure.actual, Some('1'));
-                assert_eq!(failure.expected.to_string(), CharClass::Alphabetic.to_string());
+                assert_eq!(failure.actual, actual);
+                assert_eq!(failure.expected.to_string(), parser.char_pattern.to_string());
             }
             Err(_) => panic!("Expected failure."),
         }
