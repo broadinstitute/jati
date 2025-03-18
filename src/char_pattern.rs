@@ -1,4 +1,4 @@
-use std::fmt::{Display, Formatter};
+use std::fmt::{Debug, Display, Formatter};
 
 #[derive(Clone)]
 pub enum CharPattern {
@@ -90,6 +90,18 @@ impl Display for CharPattern {
             }
             CharPattern::End => { write!(f, "end of input") }
         }
+    }
+}
+
+impl Debug for CharClass {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        Display::fmt(self, f)
+    }
+}
+
+impl Debug for CharPattern {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        Display::fmt(self, f)
     }
 }
 

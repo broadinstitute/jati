@@ -217,7 +217,7 @@ impl<C: CharTap> Next<C> {
             Err(Failure {
                 pos,
                 actual: self.c,
-                expected: Some(char_pattern.clone()),
+                expected: char_pattern.clone(),
             })
         }
     }
@@ -226,5 +226,12 @@ impl<C: CharTap> Next<C> {
 impl<I: Iterator<Item=char> + Clone> From<I> for Input<Map<I, fn(char) -> Result<char, Error>>> {
     fn from(chars: I) -> Self {
         Input::new(chars.map(Ok))
+    }
+}
+
+impl<'a> From<&'a str> for Input<Map<std::str::Chars<'a>, fn(char) -> Result<char, Error>>>
+{
+    fn from(s: &'a str) -> Self {
+        Input::new(s.chars().map(Ok))
     }
 }

@@ -15,15 +15,16 @@ pub trait Parser {
     fn parse<C: CharTap>(&self, input: &Input<C>)
         -> Result<Success<C, Self::Output>, ParseIssue>;
 }
-
+#[derive(Debug)]
 pub enum ParseIssue {
     Error(Error),
     Failure(Failure),
 }
+#[derive(Debug)]
 pub struct Failure {
     pub pos: Pos,
     pub actual: Option<char>,
-    pub expected: Option<CharPattern>,
+    pub expected: CharPattern,
 }
 
 impl From<Error> for ParseIssue {
@@ -45,9 +46,6 @@ impl Display for Failure {
             None => { write!(f, "got end of input, but expected ")?; }
             Some(c) => { write!(f, "got '{}', but expected ", c)?; }
         }
-        match &self.expected {
-            Some(pattern) => write!(f, "{}", pattern),
-            None => write!(f, "end of input"),
-        }
+        write!(f, "{}", &self.expected)
     }
 }
