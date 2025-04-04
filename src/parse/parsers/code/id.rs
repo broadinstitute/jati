@@ -1,7 +1,7 @@
 use crate::char_pattern::{CharClass, CharPattern};
 use crate::input::{CharTap, Input};
 use crate::parse::{ParseIssue, Parser, Success};
-use crate::parse::parsers::char::CharParser;
+use crate::parse::parsers::base::char::CharParser;
 
 pub struct IdParser {}
 
@@ -21,7 +21,7 @@ impl Parser for IdParser {
         let start_char_parser =
             CharParser::new(CharPattern::for_class(CharClass::Alphabetic)
                 .union(CharPattern::Char('_')));
-        let Success { input, output: char1} = start_char_parser.parse(input)?;
+        let Success { remainder: input, output: char1} = start_char_parser.parse(input)?;
         id.push(char1.unwrap());
         let char_parser =
             CharParser::new(CharPattern::for_class(CharClass::Alphanumeric)
@@ -29,12 +29,12 @@ impl Parser for IdParser {
         let mut input = input;
         loop {
             match char_parser.parse(&input) {
-                Ok(Success { input: next_input, output: c }) => {
+                Ok(Success { remainder: next_input, output: c }) => {
                     id.push(c.unwrap());
                     input = next_input;
                 }
                 Err(ParseIssue::Failure(_)) => {
-                    break Ok(Success { output: id, input });
+                    break Ok(Success { output: id, remainder: input });
                 }
                 Err(ParseIssue::Error(error)) => {
                     break Err(ParseIssue::Error(error));

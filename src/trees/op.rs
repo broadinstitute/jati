@@ -17,7 +17,8 @@ pub enum Op<P: Props> {
 
 #[derive(Clone, Copy, Eq, PartialEq)]
 pub enum NonIdOp {
-    BlockOpen, BlockClosed
+    BlockYieldingLastValue,
+    BlockYieldingUnit
 }
 
 #[derive(Clone)]
@@ -41,10 +42,10 @@ pub struct OpExpression<P: Props> {
 impl NonIdOp {
     pub fn tpe(&self, kids: &[Tree<Typed>]) -> Type {
         match self {
-            NonIdOp::BlockOpen => {
+            NonIdOp::BlockYieldingLastValue => {
                 kids.last().map_or(Type::Unit, |kid| kid.tpe())
             }
-            NonIdOp::BlockClosed => {
+            NonIdOp::BlockYieldingUnit => {
                 Type::Unit
             }
         }
@@ -85,13 +86,13 @@ impl<P: Props> OpExpression<P> {
         match op {
             Op::NonId(non_id_op) => {
                 match non_id_op {
-                    NonIdOp::BlockOpen => {
-                        let non_id_op = NonIdOp::BlockOpen;
+                    NonIdOp::BlockYieldingLastValue => {
+                        let non_id_op = NonIdOp::BlockYieldingLastValue;
                         let op = Op::NonId(non_id_op);
                         Ok(OpExpression::new(op, typed_kids))
                     }
-                    NonIdOp::BlockClosed => {
-                        let non_id_op = NonIdOp::BlockClosed;
+                    NonIdOp::BlockYieldingUnit => {
+                        let non_id_op = NonIdOp::BlockYieldingUnit;
                         let op = Op::NonId(non_id_op);
                         Ok(OpExpression::new(op, typed_kids))
                     }
@@ -127,11 +128,11 @@ impl<P: Props> Display for OpExpression<P> {
         match &self.op {
             Op::NonId(non_id_op) => {
                 match non_id_op {
-                    NonIdOp::BlockOpen => {
+                    NonIdOp::BlockYieldingLastValue => {
                         print_joined(f, &self.kids, ";\n")?;
                         writeln!(f)
                     }
-                    NonIdOp::BlockClosed => {
+                    NonIdOp::BlockYieldingUnit => {
                         print_ended(f, &self.kids, ";\n")
                     }
                 }

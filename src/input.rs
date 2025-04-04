@@ -4,7 +4,7 @@ use crate::parse::Failure;
 use std::fmt::Display;
 use std::iter::Map;
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd)]
 pub struct Pos {
     pub line: usize,
     pub column: usize,

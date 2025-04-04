@@ -18,7 +18,7 @@ impl Parser for CharParser {
     fn parse<C: CharTap>(&self, input: &Input<C>) -> Result<Success<C, Self::Output>, ParseIssue> {
         let next = input.the_next()?;
         let c = next.match_with(&self.char_pattern)?;
-        Ok(Success { output: c, input: next.input })
+        Ok(Success { output: c, remainder: next.input })
     }
 }
 

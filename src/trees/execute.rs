@@ -45,11 +45,11 @@ impl<R: Runtime> Executor<R> for SimpleExecutor<R> {
                     match &op.op {
                         Op::NonId(non_id_op) => {
                             match non_id_op {
-                                NonIdOp::BlockOpen => {
+                                NonIdOp::BlockYieldingLastValue => {
                                     values.last()
                                         .map_or(Ok(Value::Unit), |v| Ok(v.clone()))
                                 }
-                                NonIdOp::BlockClosed => {
+                                NonIdOp::BlockYieldingUnit => {
                                     Ok(Value::Unit)
                                 }
                             }

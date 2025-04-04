@@ -1,5 +1,6 @@
-pub mod id;
-pub mod char;
-pub mod key;
+pub mod seq;
+pub mod alt;
+pub mod base;
+pub mod code;
 
 
