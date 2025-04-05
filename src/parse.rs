@@ -5,6 +5,7 @@ use crate::parse::parsers::alt::opt::OptParser;
 use parsers::base::map::MapParser;
 use std::cmp::Ordering;
 use std::fmt::{Display, Formatter};
+use crate::parse::parsers::base::boxed::BoxedParser;
 
 pub(crate) mod error;
 pub mod parsers;
@@ -16,6 +17,7 @@ pub struct Success<C: CharTap, O> {
 pub trait Parser {
     type Output;
     fn parse<C: CharTap>(&self, input: &Input<C>) -> Result<Success<C, Self::Output>, ParseIssue>;
+    fn boxed(self) -> BoxedParser<Self::Output, Self> where Self: Sized { BoxedParser::new(self) }
     fn opt(self) -> OptParser<Self::Output, Self>
     where
         Self: Sized,
