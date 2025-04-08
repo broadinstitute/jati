@@ -1,4 +1,4 @@
-use crate::input::{CharTap, Input};
+use crate::input::Input;
 use crate::parse::{ParseIssue, Parser, Success};
 
 pub struct Alt2Parser<T, P1, P2>
@@ -27,7 +27,7 @@ where
 {
     type Output = T;
 
-    fn parse<C: CharTap>(&self, input: &Input<C>) -> Result<Success<C, Self::Output>, ParseIssue> {
+    fn parse<'a>(&self, input: &Input<'a>) -> Result<Success<'a, Self::Output>, ParseIssue> {
         let input = input.clone();
         match self.parser1.parse(&input) {
             Ok(success) => Ok(success),

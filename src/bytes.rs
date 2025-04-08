@@ -5,10 +5,18 @@ use std::sync::{Arc, RwLock};
 
 const BUFFER_SIZE: usize = 1024;
 
-#[derive(Clone)]
 pub struct Bytes<R: Read> {
     pos: usize,
     slices: Arc<BytesSlice<R>>,
+}
+
+impl<R: Read> Clone for Bytes<R> {
+    fn clone(&self) -> Self {
+        Bytes {
+            pos: self.pos,
+            slices: self.slices.clone(),
+        }
+    }
 }
 struct BytesSlice<R: Read> {
     n_bytes: usize,

@@ -1,7 +1,7 @@
 use crate::char_pattern::CharPattern;
-use crate::input::{CharTap, Input};
-use crate::parse::{ParseIssue, Parser, Success};
+use crate::input::Input;
 use crate::parse::parsers::base::char::CharParser;
+use crate::parse::{ParseIssue, Parser, Success};
 
 pub struct KeyParser {
     key: String,
@@ -16,7 +16,7 @@ impl KeyParser {
 impl Parser for KeyParser {
 
     type Output = ();
-    fn parse<C: CharTap>(&self, input: &Input<C>) -> Result<Success<C, ()>, ParseIssue> {
+    fn parse<'a>(&self, input: &Input<'a>) -> Result<Success<'a, ()>, ParseIssue> {
         let mut input = input.clone();
         for c in self.key.chars() {
             let char_parser = CharParser::new(CharPattern::for_char(c));

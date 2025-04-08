@@ -1,5 +1,5 @@
 use crate::char_pattern::CharPattern;
-use crate::input::{CharTap, Input};
+use crate::input::Input;
 use crate::parse::{ParseIssue, Parser, Success};
 
 pub struct CharParser {
@@ -15,7 +15,7 @@ impl CharParser {
 impl Parser for CharParser {
     type Output = Option<char>;
 
-    fn parse<C: CharTap>(&self, input: &Input<C>) -> Result<Success<C, Self::Output>, ParseIssue> {
+    fn parse<'a>(&self, input: &Input<'a>) -> Result<Success<'a, Self::Output>, ParseIssue> {
         let next = input.the_next()?;
         let c = next.match_with(&self.char_pattern)?;
         Ok(Success { output: c, remainder: next.input })

@@ -1,4 +1,4 @@
-use crate::input::{CharTap, Input};
+use crate::input::Input;
 use crate::parse::{ParseIssue, Parser, Success};
 
 pub struct VecParser<T, P>
@@ -25,7 +25,7 @@ where
 {
     type Output = Vec<T>;
 
-    fn parse<C: CharTap>(&self, input: &Input<C>) -> Result<Success<C, Self::Output>, ParseIssue> {
+    fn parse<'a>(&self, input: &Input<'a>) -> Result<Success<'a, Self::Output>, ParseIssue> {
         let mut result = Vec::new();
         let mut current_input = input.clone();
         loop {

@@ -1,4 +1,4 @@
-use crate::input::{CharTap, Input};
+use crate::input::Input;
 use crate::parse::{ParseIssue, Parser, Success};
 
 pub struct OptParser<T, P> where P: Parser<Output=T> {
@@ -14,7 +14,7 @@ impl<T, P> OptParser<T, P> where P: Parser<Output=T> {
 impl<T, P> Parser for OptParser<T, P> where P: Parser<Output=T> {
     type Output = Option<T>;
 
-    fn parse<C: CharTap>(&self, input: &Input<C>) -> Result<Success<C, Self::Output>, ParseIssue> {
+    fn parse<'a>(&self, input: &Input<'a>) -> Result<Success<'a, Self::Output>, ParseIssue> {
         let input = input.clone();
         match self.parser.parse(&input) {
             Ok(success) => Ok(Success {

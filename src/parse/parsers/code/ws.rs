@@ -1,7 +1,7 @@
 use crate::char_pattern::{CharClass, CharPattern};
-use crate::input::{CharTap, Input};
-use crate::parse::{ParseIssue, Parser, Success};
+use crate::input::Input;
 use crate::parse::parsers::base::char::CharParser;
+use crate::parse::{ParseIssue, Parser, Success};
 
 pub struct WhitespaceParser {}
 
@@ -16,7 +16,7 @@ impl Default for WhitespaceParser {
 impl Parser for WhitespaceParser {
     type Output = ();
 
-    fn parse<C: CharTap>(&self, input: &Input<C>) -> Result<Success<C, Self::Output>, ParseIssue> {
+    fn parse<'a>(&self, input: &Input<'a>) -> Result<Success<'a, Self::Output>, ParseIssue> {
         let mut input = input.clone();
         let ws_char_parser =
             CharParser::new(CharPattern::for_class(CharClass::Whitespace));

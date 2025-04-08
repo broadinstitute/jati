@@ -2,7 +2,7 @@ use crate::char_pattern::CharPattern;
 use crate::error::Error;
 use crate::parse::Failure;
 use std::fmt::Display;
-use std::iter::Map;
+use crate::chars::Chars;
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd)]
 pub struct Pos {
@@ -124,19 +124,15 @@ impl LineEndState {
     }
 }
 
-pub trait CharTap: Iterator<Item = Result<char, Error>> + Clone {}
-
-impl<T: Iterator<Item = Result<char, Error>> + Clone> CharTap for T {}
-
 #[derive(Clone)]
-pub struct Input<C: CharTap> {
-    chars: C,
+pub struct Input<'a> {
+    chars: Chars<'a>,
     pos_tracker: PosTracker,
 }
 
-pub struct Next<C: CharTap> {
+pub struct Next<'a> {
     pub c: Option<char>,
-    pub input: Input<C>,
+    pub input: Input<'a>,
 }
 
 impl Pos {
@@ -189,8 +185,8 @@ impl PosTracker {
     }
 }
 
-impl<C: CharTap> Input<C> {
-    pub fn new(chars: C) -> Self {
+impl<'a> Input<'a> {
+    pub fn new(chars: Chars<'a>) -> Self {
         Input {
             chars,
             pos_tracker: PosTracker::new(),
@@ -199,7 +195,7 @@ impl<C: CharTap> Input<C> {
     pub fn last_pos(&self) -> Pos {
         self.pos_tracker.pos
     }
-    pub fn the_next(&self) -> Result<Next<C>, Error> {
+    pub fn the_next(&self) -> Result<Next<'a>, Error> {
         let mut chars_next = self.chars.clone();
         let c = chars_next.next().transpose()?;
         let pos_tracker = self.pos_tracker.clone().next(&c);
@@ -208,7 +204,7 @@ impl<C: CharTap> Input<C> {
     }
 }
 
-impl<C: CharTap> Next<C> {
+impl Next<'_> {
     pub fn match_with(&self, char_pattern: &CharPattern) -> Result<Option<char>, Failure> {
         if char_pattern.includes(self.c) {
             Ok(self.c)
@@ -223,15 +219,9 @@ impl<C: CharTap> Next<C> {
     }
 }
 
-impl<I: Iterator<Item=char> + Clone> From<I> for Input<Map<I, fn(char) -> Result<char, Error>>> {
-    fn from(chars: I) -> Self {
-        Input::new(chars.map(Ok))
-    }
-}
-
-impl<'a> From<&'a str> for Input<Map<std::str::Chars<'a>, fn(char) -> Result<char, Error>>>
+impl<'a> From<&'a str> for Input<'a>
 {
     fn from(s: &'a str) -> Self {
-        Input::new(s.chars().map(Ok))
+        Input::new(Chars::from(s))
     }
 }

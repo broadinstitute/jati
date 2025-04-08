@@ -1,6 +1,6 @@
-use std::sync::Arc;
-use crate::input::{CharTap, Input};
+use crate::input::Input;
 use crate::parse::{ParseIssue, Parser, Success};
+use std::sync::Arc;
 
 #[derive(Clone)]
 pub struct BoxedParser<O, P: Parser<Output=O>> {
@@ -14,7 +14,7 @@ impl<O, P: Parser<Output=O>> BoxedParser<O, P> {
 impl<O, P: Parser<Output=O>> Parser for BoxedParser<O, P> {
     type Output = O;
 
-    fn parse<C: CharTap>(&self, input: &Input<C>) -> Result<Success<C, Self::Output>, ParseIssue> {
+    fn parse<'a>(&self, input: &Input<'a>) -> Result<Success<'a, Self::Output>, ParseIssue> {
         self.inner.parse(input)
     }
 }
