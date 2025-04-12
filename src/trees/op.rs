@@ -1,4 +1,4 @@
-use std::fmt::{Display, Formatter};
+use std::fmt::{write, Display, Formatter};
 use crate::error::Error;
 use crate::runtime::Runtime;
 use crate::symbols::id::Id;
@@ -31,7 +31,7 @@ pub struct IdOp<P: Props> {
 
 #[derive(Clone, Ord, Eq, PartialEq, PartialOrd)]
 pub enum OpSyntax {
-    Call
+    Call, Prefix, Postfix, Infix,
 }
 
 pub struct OpExpression<P: Props> {
@@ -141,8 +141,12 @@ impl<P: Props> Display for OpExpression<P> {
                 match id_op.syntax {
                     OpSyntax::Call => {
                         write!(f, "{}(", id_op.id)?;
-                        print_joined(f, &self.kids, ", ")
+                        print_joined(f, &self.kids, ", ")?;
+                        write!(f, ")")
                     }
+                    OpSyntax::Prefix => { }
+                    OpSyntax::Postfix => {}
+                    OpSyntax::Infix => {}
                 }
             }
         }
