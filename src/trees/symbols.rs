@@ -1,16 +1,21 @@
 use std::fmt::{Debug, Display, Formatter};
 use crate::symbols::id::Id;
 use crate::trees::types::Type;
+use crate::trees::op::Phrasing;
 
 pub enum SymbolError {
     NoSuchVar(Id),
     NoSuchFun(Id),
+    NoSuchOp(Phrasing),
     Args(ArgsError),
 }
 
 impl SymbolError {
     pub fn no_such_var(id: &Id) -> SymbolError { SymbolError::NoSuchVar(id.clone()) }
     pub fn no_such_fun(id: &Id) -> SymbolError { SymbolError::NoSuchFun(id.clone()) }
+    pub fn no_such_op(phrasing: &Phrasing) -> SymbolError {
+        SymbolError::NoSuchOp(phrasing.clone())
+    }
     pub fn args_issue(id: &Id, args_failure: ArgsFailure) -> SymbolError {
         let fun_name = id.clone();
         let args_error = ArgsError { fun_id: fun_name, args_failure };

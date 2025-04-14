@@ -8,6 +8,7 @@ use crate::symbols::var::{VarKey, VarSig, VarTag};
 use crate::trees::symbols::{ArgsError, SymbolError};
 use crate::trees::types::Type;
 use crate::trees::values::Value;
+use crate::trees::op::Phrasing;
 
 pub trait SymbolTable<R: Runtime + ?Sized> {
     fn define_var(&mut self, id: Id, value: Value) -> Result<VarKey, SymbolError>;
@@ -15,6 +16,7 @@ pub trait SymbolTable<R: Runtime + ?Sized> {
     fn define_fun(&mut self, id: Id, sig: OpSig, func: Func<R>) -> Result<OpKey, SymbolError>;
     fn resolve_var(&mut self, id: &Id) -> Result<Option<VarTag>, SymbolError>;
     fn resolve_fun(&mut self, id: &Id, args: &[Type]) -> Result<Option<OpTag>, SymbolError>;
+    fn resolve_op(&mut self, phrasing: &Phrasing, args: &[Type]) -> Result<Option<OpTag>, SymbolError>;
     fn read_var(&self, key: &VarKey) -> Option<&Value>;
     fn read_fun(&self, key: &OpKey) -> Option<&Func<R>>;
 }
@@ -22,6 +24,7 @@ pub trait SymbolTable<R: Runtime + ?Sized> {
 pub struct BasicSymbolTable<R: Runtime> {
     var_defs: BTreeMap<Id, VarTag>,
     fun_defs: BTreeMap<Id, OpTag>,
+    op_defs: BTreeMap<Phrasing, OpTag>,
     values: BTreeMap<VarKey, Value>,
     funcs: BTreeMap<OpKey, Func<R>>,
 }
@@ -92,6 +95,17 @@ impl<R: Runtime> SymbolTable<R> for BasicSymbolTable<R> {
         }
     }
 
+    fn resolve_op(&mut self, phrasing: &Phrasing, args: &[Type])
+        -> Result<Option<OpTag>, SymbolError> {
+        match self.op_defs.get(&phrasing) {
+            None => { Ok(None) }
+            Some(tag) => {
+                tag.sig.check_arg_types(args)
+                    .map_err(|arg_fail| ArgsError::new(Id::new(phrasing.to_string()), arg_fail))?;
+                Ok(Some(tag.clone()))
+            }
+        }
+    }
     fn read_var(&self, key: &VarKey) -> Option<&Value> { self.values.get(key) }
     fn read_fun(&self, key: &OpKey) -> Option<&Func<R>> { self.funcs.get(key) }
 }
