@@ -56,20 +56,25 @@ impl<P: Props> OpExpression<P> {
             OpStructure::Unary(unary_structure) => {
                 let UnaryStructure { phrasing, kid} = unary_structure;
                 let typed_kid = kid.into_typed(symbols)?;
-                let op_tag = symbols.resolve_op(&Phrasing::Unary(phrasing), &[typed_kid.tpe()])?
-                    .ok_or_else(|| SymbolError::no_such_op(&Phrasing::Unary(phrasing)))?;
+                let phrasing = Phrasing::Unary(phrasing);
+                let op_tag = symbols.resolve_op(&phrasing, &[typed_kid.tpe()])?
+                    .ok_or_else(|| SymbolError::no_such_op(&phrasing))?;
+                let Phrasing::Unary(phrasing) = phrasing else { unreachable!() };
                 let op_structure =
                     OpStructure::Unary(UnaryStructure { phrasing, kid: Box::new(typed_kid) });
                 let typed_op_expression = OpExpression { op_tag, op_structure };
                 Ok(typed_op_expression)
             }
             OpStructure::Binary(binary_structure) => {
-                let BinaryStructure { phrasing, left, right } = binary_structure;
+                let BinaryStructure {
+                    phrasing, left, right
+                } = binary_structure;
                 let typed_left = left.into_typed(symbols)?;
                 let typed_right = right.into_typed(symbols)?;
-                let op_tag = symbols.resolve_op(&Phrasing::Binary(phrasing),
-                                                &[typed_left.tpe(), typed_right.tpe()])?
-                    .ok_or_else(|| SymbolError::no_such_op(&Phrasing::Binary(phrasing)))?;
+                let phrasing = Phrasing::Binary(phrasing);
+                let op_tag = symbols.resolve_op(&phrasing, &[typed_left.tpe(), typed_right.tpe()])?
+                    .ok_or_else(|| SymbolError::no_such_op(&phrasing))?;
+                let Phrasing::Binary(phrasing) = phrasing else { unreachable!() };
                 let op_structure =
                     OpStructure::Binary(BinaryStructure { phrasing, left: Box::new(typed_left),
                                                          right: Box::new(typed_right) });
@@ -83,10 +88,12 @@ impl<P: Props> OpExpression<P> {
                 let typed_left = left.into_typed(symbols)?;
                 let typed_middle = middle.into_typed(symbols)?;
                 let typed_right = right.into_typed(symbols)?;
-                let op_tag = symbols.resolve_op(&Phrasing::Tertiary(phrasing),
-                                                &[typed_left.tpe(), typed_middle.tpe(),
-                                                  typed_right.tpe()])?
-                    .ok_or_else(|| SymbolError::no_such_op(&Phrasing::Tertiary(phrasing)))?;
+                let phrasing = Phrasing::Tertiary(phrasing);
+                let op_tag =
+                    symbols.resolve_op(&phrasing, &[typed_left.tpe(), typed_middle.tpe(),
+                        typed_right.tpe()])?
+                    .ok_or_else(|| SymbolError::no_such_op(&phrasing))?;
+                let Phrasing::Tertiary(phrasing) = phrasing else { unreachable!() };
                 let op_structure =
                     OpStructure::Tertiary(TertiaryStructure { phrasing, left: Box::new(typed_left),
                                                               middle: Box::new(typed_middle),
@@ -102,8 +109,10 @@ impl<P: Props> OpExpression<P> {
                     typed_kids.push(kid.into_typed(symbols)?)
                 }
                 let kid_types: Vec<Type> = typed_kids.iter().map(|kid| kid.tpe()).collect();
-                let op_tag = symbols.resolve_op(&Phrasing::Polyadic(phrasing), &kid_types)?
-                    .ok_or_else(|| SymbolError::no_such_op(&Phrasing::Polyadic(phrasing)))?;
+                let phrasing = Phrasing::Polyadic(phrasing);
+                let op_tag = symbols.resolve_op(&phrasing, &kid_types)?
+                    .ok_or_else(|| SymbolError::no_such_op(&phrasing))?;
+                let Phrasing::Polyadic(phrasing) = phrasing else { unreachable!() };
                 let op_structure =
                     OpStructure::Polyadic(PolyadicStructure { phrasing, kids: typed_kids });
                 let typed_op_expression =
@@ -114,7 +123,11 @@ impl<P: Props> OpExpression<P> {
     }
 }
 
-#[derive(Clone)]
+impl OpExpression<Typed> {
+    pub fn tpe(&self) -> Type { self.op_tag.sig.tpe() }
+}
+
+#[derive(Clone, Ord, Eq, PartialEq, PartialOrd)]
 pub enum Phrasing {
     Unary(UnaryPhrasing),
     Binary(BinaryPhrasing),
@@ -122,25 +135,30 @@ pub enum Phrasing {
     Polyadic(PolyadicPhrasing),
 }
 
+#[derive(Clone, Ord, Eq, PartialEq, PartialOrd)]
 pub struct UnaryPhrasing {
     pub id: Id,
     pub syntax: UnaryOpSyntax,
 }
 
+#[derive(Clone, Ord, Eq, PartialEq, PartialOrd)]
 pub struct BinaryPhrasing {
     pub id: Id,
     pub syntax: BinaryOpSyntax,
 }
 
+#[derive(Clone, Ord, Eq, PartialEq, PartialOrd)]
 pub struct TertiaryPhrasing {
     pub id: Id,
     pub syntax: TertiaryOpSyntax,
 }
 
+#[derive(Clone, Ord, Eq, PartialEq, PartialOrd)]
 pub struct PolyadicPhrasing {
     pub id: Id,
     pub syntax: PolyadicOpSyntax,
 }
+#[derive(Clone, Ord, Eq, PartialEq, PartialOrd)]
 pub enum OpSyntax {
     Unary(UnaryOpSyntax),
     Binary(BinaryOpSyntax),
@@ -148,22 +166,23 @@ pub enum OpSyntax {
     Polyadic(PolyadicOpSyntax),
 }
 
+#[derive(Clone, Ord, Eq, PartialEq, PartialOrd)]
 pub enum UnaryOpSyntax {
     Prefix,
     Postfix,
     Circumfix
 }
-
+#[derive(Clone, Ord, Eq, PartialEq, PartialOrd)]
 pub enum BinaryOpSyntax {
     Infix,
     Circumfix
 }
-
+#[derive(Clone, Ord, Eq, PartialEq, PartialOrd)]
 pub enum TertiaryOpSyntax {
     Infix,
     Circumfix
 }
-
+#[derive(Clone, Ord, Eq, PartialEq, PartialOrd)]
 pub enum PolyadicOpSyntax {
     Infix,
     Circumfix
@@ -222,53 +241,11 @@ impl IdOpOld<Typed> {
         IdOpOld::<Typed> { id, syntax, op_tag }
     }
     pub fn tpe(&self) -> Type { self.op_tag.sig.tpe() }
-    pub fn key(&self) -> &OpSyntaxOld { &self.op_tag.key }
 }
 
 impl<P: Props> OpExpressionOld<P> {
     pub fn new(op: OpOld<P>, kids: Vec<Tree<P>>) -> OpExpressionOld<P> {
         OpExpressionOld { op, kids }
-    }
-
-    pub fn into_tree(self) -> Tree<P> {
-        Tree::Op(self)
-    }
-
-    pub(crate) fn into_typed<R: Runtime>(self, symbols: &mut dyn SymbolTable<R>)
-                                         -> Result<OpExpressionOld<Typed>, Error> {
-        let mut typed_kids: Vec<Tree<Typed>> = Vec::new();
-        let OpExpressionOld { op, kids } = self;
-        for kid in kids.into_iter() {
-            typed_kids.push(kid.into_typed(symbols)?)
-        }
-        match op {
-            OpOld::NonId(non_id_op) => {
-                match non_id_op {
-                    NonIdOpOld::BlockYieldingLastValue => {
-                        let non_id_op = NonIdOpOld::BlockYieldingLastValue;
-                        let op = OpOld::NonId(non_id_op);
-                        Ok(OpExpressionOld::new(op, typed_kids))
-                    }
-                    NonIdOpOld::BlockYieldingUnit => {
-                        let non_id_op = NonIdOpOld::BlockYieldingUnit;
-                        let op = OpOld::NonId(non_id_op);
-                        Ok(OpExpressionOld::new(op, typed_kids))
-                    }
-                }
-            }
-            OpOld::Id(id_op) => {
-                let IdOpOld { id, syntax, .. } = id_op;
-                let kid_types: Vec<Type>=
-                    typed_kids.iter().map(|kid| kid.tpe()).collect();
-                let fun =
-                    symbols.resolve_fun(&id, &kid_types)?
-                        .ok_or_else(|| SymbolError::no_such_fun(&id))?;
-                let typed_id_op = IdOpOld::<Typed>::new(id, syntax, fun);
-                let typed_op = OpOld::Id(typed_id_op);
-                let typed_op_expression = OpExpressionOld::new(typed_op, typed_kids);
-                Ok(typed_op_expression)
-            }
-        }
     }
 }
 
@@ -281,36 +258,35 @@ impl OpExpressionOld<Typed> {
     }
 }
 
-impl<P: Props> Display for OpExpressionOld<P> {
+impl<P: Props> Display for OpExpression<P> {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        match &self.op {
-            OpOld::NonId(non_id_op) => {
-                match non_id_op {
-                    NonIdOpOld::BlockYieldingLastValue => {
-                        print_joined(f, &self.kids, ";\n")?;
-                        writeln!(f)
-                    }
-                    NonIdOpOld::BlockYieldingUnit => {
-                        print_ended(f, &self.kids, ";\n")
-                    }
-                }
-            }
-            OpOld::Id(id_op) => {
-                match id_op.syntax {
-                    OpSyntaxOld::Call => {
-                        write!(f, "{}(", id_op.id)?;
-                        print_joined(f, &self.kids, ", ")?;
-                        write!(f, ")")
-                    }
-                    OpSyntaxOld::Prefix => { }
-                    OpSyntaxOld::Postfix => {}
-                    OpSyntaxOld::Infix => {}
-                }
-            }
+        todo!()
+    }
+}
+
+impl Display for Phrasing {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Phrasing::Unary(phrasing) => { write!(f, "{phrasing}") }
+            Phrasing::Binary(phrasing) => { write!(f, "{phrasing}") }
+            Phrasing::Tertiary(phrasing) => { write!(f, "{phrasing}") }
+            Phrasing::Polyadic(phrasing) => { write!(f, "{phrasing}") }
         }
     }
 }
 
+impl Display for UnaryPhrasing {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result { todo!() }
+}
+impl Display for BinaryPhrasing {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result { todo!() }
+}
+impl Display for TertiaryPhrasing {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result { todo!() }
+}
+impl Display for PolyadicPhrasing {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result { todo!() }
+}
 fn print_joined<D: Display>(f: &mut Formatter<'_>, list: &[D], sep: &str) -> std::fmt::Result {
     let mut iter = list.iter();
     match iter.next() {

@@ -33,6 +33,7 @@ impl<R: Runtime> Executor<R> for SimpleExecutor<R> {
             }
             Tree::Literal(value) => { Ok(value.clone()) }
             Tree::Op(op) => {
+
                 // let mut values = Vec::with_capacity(op.kids.len());
                 // for kid in &op.kids {
                 //     values.push(self.execute(kid, runtime, symbols)?);

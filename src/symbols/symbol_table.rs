@@ -34,6 +34,7 @@ impl<R: Runtime> BasicSymbolTable<R> {
         BasicSymbolTable {
             var_defs: BTreeMap::new(),
             fun_defs: BTreeMap::new(),
+            op_defs: BTreeMap::new(),
             values: BTreeMap::new(),
             funcs: BTreeMap::new(),
         }

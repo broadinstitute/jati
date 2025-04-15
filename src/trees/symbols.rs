@@ -25,6 +25,7 @@ impl SymbolError {
         match self {
             SymbolError::NoSuchVar(name) => { format!("Unknown variable {}.", name) }
             SymbolError::NoSuchFun(name) => { format!("Unknown function {}.", name) }
+            SymbolError::NoSuchOp(phrasing) => { format!("Unknown operator {}.", phrasing) }
             SymbolError::Args(args_error) => {
                 let ArgsError { fun_id: fun_name, args_failure } = args_error;
                 match args_failure {
